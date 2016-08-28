@@ -1,10 +1,7 @@
-Robot = require('./robot')
-
-var aggressiveRobot = Robot.aggressiveRobot;
-var strongRobot = Robot.strongRobot;
+var aggressiveRobot = require('./models/aggressive').aggressiveRobot;
+var strongRobot = require('./models/strong').strongRobot;
 
 fight = function(robotLhs, robotRhs) {
-    console.log(robotRhs);
     while (robotLhs.isAlive() && robotRhs.isAlive()) {
         var hurtL = robotLhs.onAct(),
             hurtR = robotRhs.onAct();
