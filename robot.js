@@ -1,5 +1,6 @@
 basic = require('./basic')
 DIRECTIONS = basic.DIRECTIONS;
+ACTIONS = basic.ACTIONS;
 
 // definition for action
 exports.Action = function(name) {
@@ -11,7 +12,7 @@ exports.Action = function(name) {
     }
 
     this.act = function(attribute) {
-        return attribute.attack;
+        return [];
     }
 
 }
@@ -20,9 +21,10 @@ exports.Action = function(name) {
 
 // Basic robot definition
 exports.Robot = function(attribute, action) {
-    
+
     this.attribute = attribute;
     this.action = action;
+    this.loc = {x: 0, y: 0};
 
     this.onAttack = function(hurt) {
         if ('onAttack' in action)
@@ -31,7 +33,7 @@ exports.Robot = function(attribute, action) {
     }
     
     this.onAct = function() {
-        return action.act(this.attribute);
+        return this.action.act(this.attribute);
     }
 
     this.getName = function() {
@@ -40,6 +42,11 @@ exports.Robot = function(attribute, action) {
 
     this.isAlive = function() {
         return this.attribute.health > 0;
+    }
+    
+    this.move = function(vector) {
+        this.loc.x += vector.x;
+        this.loc.y += vector.y;
     }
 }
 

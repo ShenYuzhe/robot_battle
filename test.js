@@ -109,8 +109,52 @@ person = {
 };
 console.log(person.hasOwnProperty('name'));
 
+privateFunc = function() {
+    var a = 1;
+    this.show = function() {
+        console.log(a);
+    }
+}
 
+f = new privateFunc();
+f.show();
 
+TestBuilder = function() {
 
+    var product = function() {
+    
+        this.show = function() {
+            console.log(this.name + " : " + this.age);
+        }
+    }
 
+    this.withName = function(name) {
+        this.name = name;
+        return this;
+    }
 
+    this.withAge = function(age) {
+        this.age = age;
+        return this;
+    }
+
+    this.build = function() {
+        var p = new product();
+        p.name = this.name;
+        p.age = this.age;
+        return p;
+    }
+
+}
+
+builder = new TestBuilder();
+p = builder.withName('tom').withAge('32').build();
+p.show();
+
+js = {a: {"name": "a"}, c: "d"};
+sub = {name: "a"}
+console.log(sub.name in js);
+
+ar = [1, 2, 3];
+for (i in ar)
+    console.log(ar[i]);

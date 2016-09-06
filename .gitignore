@@ -1,0 +1,6 @@
+*.swo
+*.swp
+*.swn
+models/*.swo
+models/*.swp
+models/*.swn
