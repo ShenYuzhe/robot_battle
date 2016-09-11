@@ -18,7 +18,6 @@ Driver.prototype.act = function(attribute) {
 }
 
 exports.Driver = Driver;
-
    
 
 // Basic robot definition

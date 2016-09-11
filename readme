@@ -1,1 +1,10 @@
 A platform for ai robot fights
+
+1. basic attack (check)
+2. basic move (check)
+3. basic energy (check)
+
+TODO:
+1. sight system
+2. turning system
+3. start to build backend framework ? / build front end ?
