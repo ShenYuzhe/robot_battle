@@ -2,7 +2,7 @@ RobotModel = require('../robot');
 basic = require('../basic');
 
 Robot = RobotModel.Robot;
-Action = RobotModel.Action;
+Driver = RobotModel.Driver;
 
 Vector = basic.Vector;
 Attack = basic.Attack;
@@ -14,15 +14,15 @@ attributeAgressive = {
     'attack': 100
 }
 
-aggressiveAction = new Action('tom');
+aggressiveDriver = new Driver('tom');
 
-aggressiveAction.act = function(attribute) {
+aggressiveDriver.act = function(attribute) {
     return [createAction("MOVE", new Vector("NORTH", 2)),
         createAction("ATTACK", new Attack(attribute.attack, new Vector("WEST", 1)))];
 }
 
-aggressiveAction.onAttack = function(hurt) {
+aggressiveDriver.onAttack = function(hurt) {
     console.log('holy shit');
 }
 
-exports.aggressiveRobot = new Robot(attributeAgressive, aggressiveAction);
+exports.aggressiveRobot = new Robot(attributeAgressive, aggressiveDriver);

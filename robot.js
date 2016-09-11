@@ -3,7 +3,7 @@ DIRECTIONS = basic.DIRECTIONS;
 ACTIONS = basic.ACTIONS;
 
 // definition for action
-exports.Action = function(name) {
+exports.Driver = function(name) {
     
     this.name = name;
 
@@ -20,24 +20,24 @@ exports.Action = function(name) {
    
 
 // Basic robot definition
-exports.Robot = function(attribute, action) {
+exports.Robot = function(attribute, driver) {
 
     this.attribute = attribute;
-    this.action = action;
+    this.driver = driver;
     this.loc = {x: 0, y: 0};
 
     this.onAttack = function(hurt) {
-        if ('onAttack' in action)
-            action.onAttack(hurt);    
+        if ('onAttack' in driver)
+            driver.onAttack(hurt);    
         this.attribute.health -= hurt;
     }
     
     this.onAct = function() {
-        return this.action.act(this.attribute);
+        return this.driver.act(this.attribute);
     }
 
     this.getName = function() {
-        return this.action.name;
+        return this.driver.name;
     }
 
     this.isAlive = function() {

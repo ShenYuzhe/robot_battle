@@ -1,7 +1,7 @@
 RobotModel = require('../robot');
 
 Robot = RobotModel.Robot;
-Action = RobotModel.Action;
+Driver = RobotModel.Driver;
 
 attributeStrong = {
     'health': 500,
@@ -9,6 +9,6 @@ attributeStrong = {
 }
 
 // instance for strong but gentle user
-strongAction = new Action('Jerry');
+strongDriver = new Driver('Jerry');
 
-exports.strongRobot = new Robot(attributeStrong, strongAction);
+exports.strongRobot = new Robot(attributeStrong, strongDriver);

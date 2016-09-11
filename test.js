@@ -158,3 +158,44 @@ console.log(sub.name in js);
 ar = [1, 2, 3];
 for (i in ar)
     console.log(ar[i]);
+
+father = function() {
+}
+
+father.prototype.phone = "ddd";
+
+son = function() {
+    son.prototype = father.prototype;
+    son.constructor = son;
+}
+
+
+s = new son();
+
+basic = require('./basic');
+Defense = basic.Defense;
+defense = new Defense();
+console.log('cost: ' + defense.cost);
+
+f = function() {
+    console.log("yes in function");
+    f.prototype.name = "yyy";
+}
+
+s = function() {
+    
+    for (key in f.prototype)
+        console.log(key);
+    
+    
+
+}
+
+
+j = {}
+j.name = "ddd";
+for (i in Object.getOwnPropertyNames(j))
+    console.log(i);
+
+
+console.log(f.age);
