@@ -191,11 +191,8 @@ s = function() {
 
 }
 
-
-j = {}
-j.name = "ddd";
-for (i in Object.getOwnPropertyNames(j))
-    console.log(i);
-
-
-console.log(f.age);
+Dog = function() {}
+Dog.prototype.species = "dog";
+dog = new Dog();
+Dog.prototype.species = "cat";
+console.log(3 >= 2);

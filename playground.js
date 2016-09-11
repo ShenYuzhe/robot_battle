@@ -3,30 +3,31 @@ var strongRobot = require('./models/strong').strongRobot;
 
 PlaygroundBuilder = function() {
 
-    var calculateRound = function(actionList, robot) {
-        
-        var totalAttack = 0;
-        for (i in actionList)
-            if (actionList[i].name == "MOVE")
-                robot.move(actionList[i].body);
-            else if (actionList[i].name == "ATTACK")
-                totalAttack += actionList[i].body.strike;
-
-        return totalAttack;
-                
-    }
-
     var Playground = function(height, width) {
+        var calculateRound = function(actionList, robot) {
+            robot.recharge();
+            var totalAttack = 0;
+            for (i in actionList) {
+                if (!robot.consume(actionList[i].cost))
+                    break;
+                if (actionList[i].name == 'VECTOR')
+                    robot.move(actionList[i]);
+                else if (actionList[i].name == 'ATTACK')
+                    totalAttack += actionList[i].strike;
+            }
+            return totalAttack;
+                    
+        }
         
-        this.fight = function() {
+        Playground.prototype.fight = function() {
             while (this.robotLhs.isAlive() && this.robotRhs.isAlive()) {
                 var actsLhs = this.robotLhs.onAct(),
                     actsRhs = this.robotRhs.onAct();
                 
-                console.log(this.robotLhs.getName() + " is at ");
+                console.log(this.robotLhs.getName() + ' is at ');
                 console.log(this.robotLhs.loc);
 
-                console.log(this.robotRhs.getName() + " is at ");
+                console.log(this.robotRhs.getName() + ' is at ');
                 console.log(this.robotRhs.loc);
 
                 var hurtL = calculateRound(actsLhs, this.robotLhs),
@@ -37,27 +38,27 @@ PlaygroundBuilder = function() {
             }
 
             if (this.robotLhs.isAlive())
-                console.log(this.robotLhs.getName() + " wins");
+                console.log(this.robotLhs.getName() + ' wins');
             else if (this.robotRhs.isAlive())
-                console.log(this.robotRhs.getName() + " wins");
+                console.log(this.robotRhs.getName() + ' wins');
             else
-                console.log("tie game");
+                console.log('tie game');
 
         }
     }
-    
-    this.withGrid = function(h, w) {
+
+    PlaygroundBuilder.prototype.withGrid = function(h, w) {
         this.grid = {'height': h, 'weight': w};
         return this;
     }
 
-    this.withRobots = function(robotLhs, robotRhs) {
+    PlaygroundBuilder.prototype.withRobots = function(robotLhs, robotRhs) {
         this.robotLhs = robotLhs;
         this.robotRhs = robotRhs;
         return this;
     }
 
-    this.build = function() {
+    PlaygroundBuilder.prototype.build = function() {
         var playground = new Playground();
         playground.grid = this.grid;
         playground.robotLhs = this.robotLhs;

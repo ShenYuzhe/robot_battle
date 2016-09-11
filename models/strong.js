@@ -5,7 +5,8 @@ Driver = RobotModel.Driver;
 
 attributeStrong = {
     'health': 500,
-    'attack': 80
+    'attack': 80,
+    'energy': 3
 }
 
 // instance for strong but gentle user

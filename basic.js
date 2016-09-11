@@ -1,6 +1,3 @@
-syntaxtend = require('./utils/syntaxtend');
-inherit = syntaxtend.inherit;
-
 DIRECTIONS = {
     
     NORTH: { "name": "NORTH",
@@ -34,56 +31,55 @@ exports.DIRECTIONS = DIRECTIONS;
 ACTION_COST_UNIT = 1;
 exports.ACTION_COST_UNIT = ACTION_COST_UNIT;
 
-Action = function() {
-    Action.prototype.cost = ACTION_COST_UNIT;
+function Action() {
+
+    return {
+        'name': 'Action',
+        'cost': ACTION_COST_UNIT
+    }
+    
 }
 
-Vector = function(direction, units) {
-    inherit(new Action(), this);
+function Vector (direction, units) {
 
     if (!(direction in DIRECTIONS))
-        throw "invalid direction";
+        throw 'invalid direction';
     
-    // for playground verification
-    this.distance = units * DIRECTIONS[direction].unit;
-    // for robot location setting
-    this.x = units * DIRECTIONS[direction].x;
-    this.y = units * DIRECTIONS[direction].y
+    var vector = Action();
+    vector.name = 'VECTOR';
+    vector.cost = ACTION_COST_UNIT * 2;
 
-    this.cost = ACTION_COST_UNIT * 2;
+    vector.distance = units * DIRECTIONS[direction].unit;
+    vector.x = units * DIRECTIONS[direction].x;
+    vector.y = units * DIRECTIONS[direction].y
+
+    return vector;
 }
 exports.Vector = Vector;
 
 Attack = function(strike, vector) {
-    inherit(new Action(), this);
 
-    this.strike = strike;
-    this.vector = vector;
+    var attack = Action();
+
+    attack.name = 'ATTACK';
+    attack.strike = strike;
+    attack.vector = vector;
+
+    return attack;
 };
 exports.Attack = Attack;
 
 Defense = function(strength, vector) {
-    console.log("construct defense");
-    inherit(new Action(), this);
+    
+    var defense = Action();
 
-    this.strength = strength;  
-    this.vector = vector;
+    defense.name = 'DEFENSE';
+    defense.strength = strength;  
+    defense.vector = vector;
+
+    return defense;
 }
-
 exports.Defense = Defense;
-
-ACTIONS = {
-
-    "MOVE": Vector,
-    "ATTACK": Attack,
-    "DEFENSE": Defense
-};
-exports.ACTIONS = ACTIONS;
-
-exports.createAction = function(name, body) {
-    return {"name": name, "body": body};
-}
-
 
 
 
