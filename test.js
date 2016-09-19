@@ -196,3 +196,31 @@ Dog.prototype.species = "dog";
 dog = new Dog();
 Dog.prototype.species = "cat";
 console.log(3 >= 2);
+
+console.log(1 > 2 ? 3 : 4);
+
+ds = basic.DIRECTIONS;
+for (key in ds)
+    console.log(ds[key]);
+Vector = basic.Vector;
+vec = Vector('NORTH', 2);
+Rotate = basic.Rotate;
+vec = basic.rotateVector(vec, Rotate(false, 5));
+console.log(vec);
+a = 33;
+console.log(-a);
+
+Geometry = require('./utils/geometry');
+Vector = Geometry.Vector;
+rotateVectorByDegree = Geometry.rotateVectorByDegree;
+vec = Vector(1, 0);
+rotateVectorByDegree(vec, 60, false);
+calArc = Geometry.calArc;
+console.log(calArc(Vector(0.5, Math.sqrt(3) / 2)) * 180 / Math.PI);
+
+a = [];
+a.push(88);
+a.push(99);
+console.log(a);
+a.shift();
+console.log(a);
