@@ -85,7 +85,7 @@ exports.rotateVectorByDegree = rotateVectorByDegree;
 normalize = function(vec) {
 	
 	return Vector(Point(0, 0),
-		,Point(vec.x / vec.magnitude, vec.y / vec.magnitude));
+		Point(vec.x / vec.magnitude, vec.y / vec.magnitude));
 }
 
 arcsin = function(vec) {
@@ -124,7 +124,7 @@ exports.calArc = calArc;
 
 Sector = function(vec, width) {
 
-	var baseArch = calArch(vec);
+	var baseArch = calArc(vec);
 	var start = baseArch + width,
 		end = baseArch - width;
 
@@ -142,10 +142,10 @@ exports.Sector = Sector;
 
 scanSector = function(sector, point, board, callback) {
 
-	var q = new Queue();
+	/*var q = new Queue();
 	q.push(point);
 
-	while (!q.empty()) {
+	while (!q.isEmpty()) {
 
 		curr = q.pop();
 		if (board.covered(curr) == true)
@@ -172,7 +172,7 @@ scanSector = function(sector, point, board, callback) {
 		q.push(Point(curr.x + 1, curr.y - 1));
 		q.push(Point(curr.x + 1, curr.y + 1));
 		q.push(Point(curr.x - 1, curr.y + 1));
-	}
+	}*/
 }
 exports.scanSector = scanSector();
 
