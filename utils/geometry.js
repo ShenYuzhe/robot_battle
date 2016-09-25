@@ -1,5 +1,8 @@
 var data_struct = require('./data_struct');
+var math_tools = require('./math_tools');
 var Queue = data_struct.Queue;
+var Array2D = data_struct.Array2D;
+const assert = require('assert');
 
 Point = function(x, y) {
 
@@ -64,7 +67,7 @@ function ClosewiseMatrix(rad) {
 }
 
 rotateVector = function(vector, rad, isClockwise) {
-
+	isClockwise = isClockwise == undefined ? true : isClockwise;
 	var rotateMatrix = isClockwise ? ClosewiseMatrix(rad) : AntiClockwiseMatrix(rad);
 	var originVector = Vector(Point(0, 0),
 		Point(vector.x, vector.y));
@@ -100,28 +103,33 @@ arccos = function(vec) {
 	return [rad, -rad];
 }
 
-/* to be considered */
-MAX_DIGITS = 10;
-
-Number.prototype.isEqual = function(number, digits){
-	digits = digits == undefined? 10: digits; // 默认精度为10
-	return this.toFixed(digits) === number.toFixed(digits);
-}
-
 calArc = function(vec) {
 	var normVec = normalize(vec);
 	var sinArchs = arcsin(normVec), cosArchs = arccos(normVec);
-	console.log(sinArchs);
-	console.log(cosArchs);
 	for (i in sinArchs)
 		for ( j in cosArchs)
-			if (sinArchs[i].isEqual(cosArchs[j], MAX_DIGITS))
+			if (sinArchs[i].simEq(cosArchs[j]))
 				return sinArchs[i];
 		
 	return 0;
 }
 exports.calArc = calArc;
 
+/* board definition */
+Board = function(x, y, item) {
+	assert(x > 0 && y > 0);
+	if (item == undefined)
+		item = function(i, j) {
+			var p = Point(j, i);
+			p.covered = false;
+			return p;
+		};
+
+	return Array2D(y, x, item);
+}
+exports.Board = Board;
+
+/* sector definition */
 Sector = function(vec, width) {
 
 	var baseArch = calArc(vec);
@@ -140,41 +148,55 @@ Sector = function(vec, width) {
 }
 exports.Sector = Sector;
 
-scanSector = function(sector, point, board, callback) {
+function withinSector(sector, origin, point) {
 
-	/*var q = new Queue();
-	q.push(point);
+	if (calDistance(origin, point) > sector.radius)
+		return false;
+
+	if (origin.x == point.x && origin.y == point.y)
+		return true;
+
+	var arc = calArc(Vector(origin, point)),
+		adjustArc = arc + 2 * Math.PI;
+		
+	return (sector.start >= arc && arc >= sector.end)
+		|| (sector.start >= adjustArc && adjustArc >= sector.end);
+		//|| sector.start.simEq(arc, 3) || arc.simEq(sector.end, 3)
+		//|| sector.start.simEq(adjustArc, 3) || adjustArc.simEq(sector.end, 3);
+}
+
+scanSector = function(sector, origin, board, callback) {
+	var y = board.length;
+	if (y == 0)
+		return;
+	var x = board[0].length;
+
+	var q = new Queue();
+	q.push(origin);
 
 	while (!q.isEmpty()) {
 
-		curr = q.pop();
-		if (board.covered(curr) == true)
-			continue;
-		board.mark(curr);
-
-		if (curr.x < 0 || curr.x > board.x
-			|| curr.y < 0 || curr.y > board.y)
+		var curr = q.pop();
+		if (curr.x < 0 || curr.x > x
+			|| curr.y < 0 || curr.y > y)
 			continue;
 
-		if (calDistance(curr, point) > sector.radius)
+		if (board[curr.y][curr.x].covered == true)
+			continue;
+		board[curr.y][curr.x].covered = true;
+
+		if (!withinSector(sector, origin, curr))
 			continue;
 
-		var currArch = calArc(),
-			adjustArch = currArch + 2 * Math.PI;
+		callback(board[curr.y][curr.x]);
 
-		if (!(sector.start >= currArch && currArch >= sector.end)
-			&& !(sector.start >= adjustArch && adjustArch >= sector.end))
-			continue;
-
-		callback(curr);
-
-		q.push(Point(curr.x - 1, curr.y - 1));
-		q.push(Point(curr.x + 1, curr.y - 1));
-		q.push(Point(curr.x + 1, curr.y + 1));
-		q.push(Point(curr.x - 1, curr.y + 1));
-	}*/
+		q.push(Point(curr.x - 1, curr.y));
+		q.push(Point(curr.x + 1, curr.y));
+		q.push(Point(curr.x, curr.y - 1));
+		q.push(Point(curr.x, curr.y + 1));
+	}
 }
-exports.scanSector = scanSector();
+exports.scanSector = scanSector;
 
 
 

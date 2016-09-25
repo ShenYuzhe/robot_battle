@@ -25,3 +25,11 @@ Queue = function() {
 }
 
 exports.Queue = Queue;
+
+Array2D = function(m, n, item) {
+	var callback = typeof(item) == 'function' ? item : (v, i) => item;
+	return Array.apply(null, Array(m)).map(
+		(vi, i) => Array.apply(null, Array(n)).map(
+			(vj, j) => callback(i, j)));
+}
+exports.Array2D = Array2D;
