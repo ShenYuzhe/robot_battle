@@ -78,6 +78,7 @@ board = Board(10, 10);
 vector = Vector(Point(0, 0), Point(3, 0));
 sector = Sector(vector, Math.PI / 4);
 
+/* rough manual test */
 scanSector(sector, Point(2, 2), board,
 	function(p) {
 		console.log(p);

@@ -30,6 +30,13 @@ Vector = function(pFrom, pTo) {
 }
 exports.Vector = Vector;
 
+zoomVec = function(vec, multi) {
+
+	return Vector(Point(0, 0),
+		Point(vec.x * multi, vec.y * multi));
+	
+}
+
 dotProduct = function(vec1, vec2) {
 
 	return vec1.x * vec2.x + vec1.y * vec2.y;
@@ -148,6 +155,30 @@ Sector = function(vec, width) {
 }
 exports.Sector = Sector;
 
+rotateSector = function(sector, rad, isClockwise) {
+	if (isClockwise == undefined)
+		isClockwise = true;
+	var coef = isClockwise ? -1 : 1;
+	sector.start += rad;
+	sector.end += rad;
+
+	while (start > 2 * Math.PI) {
+		sector.start -= 2 * Math.PI;
+		sector.end -= 2 * Math.PI;
+	}
+
+	while (start < -Math.PI) { 
+		sector.start += 2 * Math.PI;
+		sector.end += 2 * Math.PI;
+	}
+}
+exports.rotateSector = rotateSector;
+
+rotateSectorByDegree = function(sector, degree, isClockwise) {
+	return rotateSector(sector, degree2Rad(degree), isClockwise);
+}
+exports.rotateSectorByDegree = rotateSectorByDegree;
+
 function withinSector(sector, origin, point) {
 
 	if (calDistance(origin, point) > sector.radius)
@@ -158,13 +189,17 @@ function withinSector(sector, origin, point) {
 
 	var arc = calArc(Vector(origin, point)),
 		adjustArc = arc + 2 * Math.PI;
-		
+
 	return (sector.start >= arc && arc >= sector.end)
 		|| (sector.start >= adjustArc && adjustArc >= sector.end);
 		//|| sector.start.simEq(arc, 3) || arc.simEq(sector.end, 3)
 		//|| sector.start.simEq(adjustArc, 3) || adjustArc.simEq(sector.end, 3);
 }
 
+
+/*
+ * callback is the function(<point on board>)
+ */
 scanSector = function(sector, origin, board, callback) {
 	var y = board.length;
 	if (y == 0)

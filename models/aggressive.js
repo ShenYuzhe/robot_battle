@@ -12,14 +12,19 @@ createAction = basic.createAction;
 attributeAgressive = {
     'health': 300,
     'attack': 100,
-    'energy': 3
+    'energy': 3,
+    'reach': 15,
+    'sight': {
+    	'distance': 15,
+    	'width': Math.PI / 3 
+    }
 }
 
 aggressiveDriver = new Driver('tom');
 
-aggressiveDriver.act = function(attribute) {
+aggressiveDriver.act = function(attribute, context) {
     return [Vector("NORTH", 2),
-        Attack(attribute.attack, Vector("WEST", 1))];
+            Attack(attribute.attack, Vector("WEST", 1))];
 }
 
 aggressiveDriver.onAttack = function(hurt) {
