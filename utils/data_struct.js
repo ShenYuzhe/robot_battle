@@ -45,10 +45,10 @@ exports.Array2D = Array2D;
  * This method only guarantee rectangular array
  */
 size = function(arr) {
-	var m = arr.length(),
+	var m = arr.length,
 		n = 0;
 	if (m > 0)
-		n = arr[0].length();
+		n = arr[0].length;
 	return [m, n];
 }
 exports.size = size;

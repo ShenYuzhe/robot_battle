@@ -36,6 +36,7 @@ zoomVec = function(vec, multi) {
 		Point(vec.x * multi, vec.y * multi));
 	
 }
+exports.zoomVec = zoomVec;
 
 dotProduct = function(vec1, vec2) {
 
@@ -159,8 +160,8 @@ rotateSector = function(sector, rad, isClockwise) {
 	if (isClockwise == undefined)
 		isClockwise = true;
 	var coef = isClockwise ? -1 : 1;
-	sector.start += rad;
-	sector.end += rad;
+	sector.start += coef * rad;
+	sector.end += coef * rad;
 
 	while (start > 2 * Math.PI) {
 		sector.start -= 2 * Math.PI;

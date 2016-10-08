@@ -1,11 +1,13 @@
 basic = require('./basic');
 geometry = require('./utils/geometry');
+
 Point = geometry.Point;
 calDistance = geometry.calDistance;
 Vector = geometry.Vector;
 zoomVec = geometry.zoomVec;
 Sector = geometry.Sector;
 rotateSectorByDegree = geometry.rotateSectorByDegree;
+
 
 // definition for action
 Driver = function(name) {
@@ -44,7 +46,7 @@ ActSummaryBuilder.prototype.withDefense = function(defense) {
 }
 
 
-ActSummaryBuilder().prototype.withLocation = function(loc) {
+ActSummaryBuilder.prototype.withLocation = function(loc) {
     this.loc = loc;
     return this;
 }
@@ -52,10 +54,10 @@ ActSummaryBuilder().prototype.withLocation = function(loc) {
 ActSummaryBuilder.prototype.build = function() {
 
     return {
-        'sight': this.sight;
-        'attack': this.attack;
-        'defense': this.defense;
-        'location': this.loc;
+        'sight': this.sight,
+        'attack': this.attack,
+        'defense': this.defense,
+        'location': this.loc,
     };
 
 }
@@ -85,7 +87,7 @@ Robot.prototype.setSight = function(vec) {
 
 Robot.prototype.roundInit =function() {
 
-    this.charge this.attribute.energy;
+    this.charge = this.attribute.energy;
     this.roundAttack = 0;
     this.roundDefense = 0;
 }
@@ -93,15 +95,17 @@ Robot.prototype.roundInit =function() {
 Robot.prototype.onAttack = function(hurt) {
     if ('onAttack' in this.driver)
         this.driver.onAttack(hurt);    
-    this.attribute.health -= hurt;
+    this.attribute.health -= (hurt - this.roundDefense);
 } 
 
 Robot.prototype.onAct = function(context) {
+    this.roundInit();
+
     var actionList = this.driver.act(this.attribute, context);
     this.executeActList(actionList);
     return new ActSummaryBuilder()
         .withAttack(this.roundAttack)
-        .withDefense(this.defense)
+        .withDefense(this.roundDefense)
         .withLocation(this.loc)
         .withSight(this.sight)
         .build();
@@ -159,7 +163,7 @@ Robot.prototype.ActTable = {
         'act': function(robot, action) {
             robot.roundDefense += action.attribute.strength;
         }
-    }
+    },
 
     'ROTATE': {
         'verify': function(robot, action) {
@@ -175,9 +179,9 @@ Robot.prototype.executeActList = function(actionList) {
     var action, actEntry;
     for (i in actionList) {
         action = actionList[i];
-        if (!this.consume(action))
+        if (!this.consume(action.cost))
             return;
-        actEntry = ActTable[action.name];
+        actEntry = this.ActTable[action.name];
         if (actEntry.verify(this, action))
             actEntry.act(this, action);
     }

@@ -12,11 +12,11 @@ function Action() {
     
 }
 
-Move = function(Point p) {
+Move = function(point) {
     var move = Action();
-    move.point = p;
+    move.point = point;
     move.name = 'MOVE';
-    return p;
+    return move;
 }
 exports.Move = Move;
 

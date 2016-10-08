@@ -6,6 +6,7 @@ Driver = RobotModel.Driver;
 attributeStrong = {
     'health': 500,
     'attack': 80,
+    'arm': 10,
     'energy': 3,
     'reach': 10,
     'rotate': 180,

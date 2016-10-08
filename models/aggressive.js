@@ -1,19 +1,19 @@
 RobotModel = require('../robot');
 basic = require('../basic');
+geometry = require('../utils/geometry');
 
 Robot = RobotModel.Robot;
 Driver = RobotModel.Driver;
-
-Vector = basic.Vector;
-Attack = basic.Attack;
-createAction = basic.createAction;
 
 // instance for agressive user
 attributeAgressive = {
     'health': 300,
     'attack': 100,
+    'arm': 10,
     'energy': 3,
     'reach': 15,
+    'rotate': 180,
+    'strength': 50,
     'sight': {
     	'distance': 15,
     	'width': Math.PI / 3 
@@ -22,9 +22,15 @@ attributeAgressive = {
 
 aggressiveDriver = new Driver('tom');
 
+
+Move = basic.Move;
+Attack = basic.Attack;
+Defense = basic.Defense;
+
+Point = geometry.Point;
+
 aggressiveDriver.act = function(attribute, context) {
-    return [Vector("NORTH", 2),
-            Attack(attribute.attack, Vector("WEST", 1))];
+    return [Move(Point(0, 0)), Attack(100)];
 }
 
 aggressiveDriver.onAttack = function(hurt) {

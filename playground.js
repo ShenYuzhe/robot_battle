@@ -1,30 +1,33 @@
 var aggressiveRobot = require('./models/aggressive').aggressiveRobot;
 var strongRobot = require('./models/strong').strongRobot;
 var geometry = require('./utils/geometry');
+var data_struct = require('./utils/data_struct');
 var Board = geometry.Board;
-var size = geometry.size;
+var calDistance = geometry.calDistance;
+var size = data_struct.size;
 
-Context = function(items, boardInfo) {
-
-    return {
-        'items': items,
-        'boardInfo': boardInfo;
-    };
-}
 
 ContextBuilder = function() {}
 
 ContextBuilder.prototype.withItems = function(items) {
     this.items = items;
+    return this;
 }
 
 ContextBuilder.prototype.withHurt = function(hurt) {
     this.hurt = hurt;
+    return this;
+}
+
+ContextBuilder.prototype.withShape = function(shape) {
+    this.shape = shape;
+    return this;
 }
 
 ContextBuilder.prototype.build = function() {
 
     return {
+        'board_shape': this.shape,
         'items': this.items,
         'hurt': this.hurt
     };
@@ -33,20 +36,29 @@ ContextBuilder.prototype.build = function() {
 PlaygroundBuilder = function() {
 
 
-    var Playground = function(height, width) {
+    var Playground = function(height, width) {}
 
-        this.board = Board(height, width);
+    Playground.prototype.initBoard = function(shape) {
+        this.shape = shape;
+        this.board = Board(shape.height, shape.width);
+    }
+
+    Playground.prototype.initRobot = function(robotL, robotR) {
+        this.robotL = robotL;
+        this.robotR = robotR;
+        this.initRobotsLoc();
     }
 
     Playground.prototype.moveOnBoard = function(robot, loc) {
         var oldLoc = robot.getLocation();
-        delete this.board[oldLoc.y][oldLoc.x].item;
+        if (oldLoc != undefined)
+            delete this.board[oldLoc.y][oldLoc.x].item;
         this.board[loc.y][loc.x].item = robot;
     }
 
     Playground.prototype.moveRobot = function(robot, loc) {
 
-        moveOnBoard(robot, loc);
+        this.moveOnBoard(robot, loc);
         robot.setLocation(loc);
         
     }
@@ -55,10 +67,10 @@ PlaygroundBuilder = function() {
 
         var view = [];
 
-        scanSector(robot.sight, robot.loc, this.board, function(e)) {
+        scanSector(robot.sight, robot.loc, this.board, function(e) {
             if (e.item != undefined)
                 view.push(e.item);
-        }
+        });
         return view;
     }
 
@@ -66,42 +78,40 @@ PlaygroundBuilder = function() {
         
         var sz = size(this.board);
         var x = sz[0], y = sz[1];
-        var robotY = y / 2, xL = x / 3, xR = 2 * x / 3;
+        var robotY = Math.floor(y / 2),
+            xL = Math.floor(x / 3), xR = Math.floor(2 * x / 3);
         var initL = Point(xL, robotY), initR = Point(xR, robotY);
-        this.moveRobot(this.robotLhs, initL);
-        this.moveRobot(this.robotRhs, initR);
+        this.moveRobot(this.robotL, initL);
+        this.moveRobot(this.robotR, initR);
 
-        this.robotLhs.setSight(Vector(Point(0, 0), Point(1, 0)));
-        this.robotRhs.setSight(Vector(Point(0, 0), Point(-1, 0)));
+        this.robotL.setSight(Vector(Point(0, 0), Point(1, 0)));
+        this.robotR.setSight(Vector(Point(0, 0), Point(-1, 0)));
     }
 
-    Playground.prototype.initRobotsLoc = function() {
-
-        var sz = size(this.board);
-        var x = sz[0], y = sz[1];
-        var robotY = y / 2, xL = x / 3, xR = 2 * x / 3;
-        var initL = Point(xL, robotY), initR = Point(xR, robotY);
-        this.moveRobot(this.robotLhs, initL);
-        this.moveRobot(this.robotRhs, initR);
-
-        this.robotLhs.setSight(Vector(Point(0, 0), Point(1, 0)));
-        this.robotRhs.setSight(Vector(Point(0, 0), Point(-1, 0)));
+    Playground.prototype.executeAct = function(summaryL, summaryR) {
+        var distance = calDistance(this.robotL.getLocation(),
+            this.robotR.getLocation());
+        //if (distance <= this.robotL.attribute.arm)
+            this.robotR.onAttack(summaryL.attack);
+        //if (distance <= this.robotR.attribute.arm)
+            this.robotL.onAttack(summaryR.attack);
     }
 
     Playground.prototype.fight = function(robotL, robotR) {
-        this.initRobotsLoc();
 
-        while(robotL.isAlive() && robotR.isAlive()) {
-            var viewL = this.updateSight(robotL),
-                viewR = this.updateSight(robotR);
-            var contextL = ContextBuilder()
-                            .withItems(viewL);
+        while(this.robotL.isAlive() && this.robotR.isAlive()) {
+            var viewL = this.updateSight(this.robotL),
+                viewR = this.updateSight(this.robotR);
+            var contextL = new ContextBuilder()
+                            .withItems(viewL)
+                            .withShape(this.shape)
                             .build(),
-                contextR = ContextBuilder()
+                contextR = new ContextBuilder()
                             .withItems(viewR)
+                            .withShape(this.shape)
                             .build();
-            var actSummaryL = robotL.onAct(contextL),
-                actSummaryR = robotR.onAct(contextR);
+            var actSummaryL = this.robotL.onAct(contextL),
+                actSummaryR = this.robotR.onAct(contextR);
 
             this.executeAct(actSummaryL, actSummaryR);
 
@@ -109,7 +119,7 @@ PlaygroundBuilder = function() {
     }
 
     PlaygroundBuilder.prototype.withGrid = function(h, w) {
-        this.grid = {'height': h, 'weight': w};
+        this.grid = {'height': h, 'width': w};
         return this;
     }
 
@@ -121,9 +131,8 @@ PlaygroundBuilder = function() {
 
     PlaygroundBuilder.prototype.build = function() {
         var playground = new Playground();
-        playground.grid = this.grid;
-        playground.robotLhs = this.robotLhs;
-        playground.robotRhs = this.robotRhs;
+        playground.initBoard(this.grid);
+        playground.initRobot(this.robotLhs, this.robotRhs);
         return playground;
     }
 }
