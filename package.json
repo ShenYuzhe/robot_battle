@@ -1,0 +1,9 @@
+{
+    "dependencies": {
+        "mongodb": "latest",
+        "async": "latest",
+        "promise": "latest",
+        "q": "latest",
+        "co": "latest"
+    }
+}
