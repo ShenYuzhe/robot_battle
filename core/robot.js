@@ -1,5 +1,5 @@
 basic = require('./basic');
-geometry = require('./utils/geometry');
+geometry = require('../utils/geometry');
 
 Point = geometry.Point;
 calDistance = geometry.calDistance;

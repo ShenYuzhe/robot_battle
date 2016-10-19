@@ -1,6 +1,6 @@
 RobotModel = require('../robot');
 basic = require('../basic');
-geometry = require('../utils/geometry');
+geometry = require('../../utils/geometry');
 
 Robot = RobotModel.Robot;
 Driver = RobotModel.Driver;

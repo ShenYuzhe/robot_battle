@@ -3,6 +3,9 @@ var assert = require('assert');
 var q = require('q');
 var co = require('co');
 
+var utils = require('../utils/data_struct');
+var checkJsonFields = utils.checkJsonFields;
+
 /* singleton url initialization */
 var endpoint = (function() {
 	var instance;
@@ -59,6 +62,20 @@ function read(usr, query, callback) {
 	return deferred.promise;
 }
 exports.read = read;
+
+function update(usr, query, data, 
+	isWhole, callback) {
+	var deferred = q.defer();
+	var body = isWhole ? data : {$set: data};
+	connectUser(usr, function(collection) {
+		collection.updateOne(query, body, function(err, result) {
+			assert.equal(null, err);
+			deferred.resolve(result);
+		});
+	});
+	return deferred.promise;
+}
+exports.update = update;
 
 function QueryBuilder() {
 
@@ -137,11 +154,31 @@ function assignUserRobot(usr, model, name) {
 }
 exports.assignUserRobot = assignUserRobot;
 
-co(
+var sample_profile = require('./sample_profile.json');
+function insertProfile(usr, profile) {
+	assert(checkJsonFields(profile, sampe_profile));
+	return insert(usr, profile);
+}
+exports.insertProfile = insertProfile;
+
+var sample_robot = require('./sample_robot.json');
+function insertRobot(usr, robot) {
+	assert(checkJsonFields(robot, sample_robot));
+	return insert(usr, robot);
+}
+exports.insertRobot = insertRobot;
+
+function createRobot(robot) {
+	return insertRobot(merchant, robot);
+}
+exports.createRobot = createRobot;
+
+/* sample usage of co library*/
+/*co(
 	function* () {
 		var deferred = q.defer();
 		deferred.resolve("hello world");
 		return "hello world";
 	}
 ).then(function(val) {console.log(val)});
-
+*/

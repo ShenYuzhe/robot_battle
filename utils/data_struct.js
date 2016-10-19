@@ -1,4 +1,6 @@
-Queue = function() {
+var assert = require('assert');
+
+function Queue() {
 
 	this.q = [];
 	Queue.prototype.doPeek = function() {
@@ -25,7 +27,6 @@ Queue = function() {
 }
 exports.Queue = Queue;
 
-
 /* m: the rows of the array
  * n: the columns of the array
  * item: the filling element of the matrix
@@ -33,7 +34,7 @@ exports.Queue = Queue;
  *       or a callback function with following format:
  *       function(i, j) where i => rowId, j => colId
  */
-Array2D = function(m, n, item) {
+function Array2D(m, n, item) {
 	var callback = typeof(item) == 'function' ? item : (v, i) => item;
 	return Array.apply(null, Array(m)).map(
 		(vi, i) => Array.apply(null, Array(n)).map(
@@ -44,7 +45,7 @@ exports.Array2D = Array2D;
 /*
  * This method only guarantee rectangular array
  */
-size = function(arr) {
+function size(arr) {
 	var m = arr.length,
 		n = 0;
 	if (m > 0)
@@ -52,3 +53,21 @@ size = function(arr) {
 	return [m, n];
 }
 exports.size = size;
+
+/*
+ * only checks the existence
+ * of fields between two Jsons
+ */
+function checkJsonFields(tar, src) {
+	assert.equal(typeof(tar), typeof(src));
+	if ('object' != typeof(tar))
+		return true;
+	for (key in src)
+		if (! src in tar)
+			return false;
+		else if ('object' == typeof(src[key])
+			&& !checkJsonFields(tar[key], src[key]))
+			return false;	
+	return true;
+}
+exports.checkJsonFields = checkJsonFields;

@@ -1,0 +1,16 @@
+{
+	"name": "sample",
+	"model": "sample",
+	"type": "robot",
+	"health": 500,
+	"attack": 80,
+	"arm": 10,
+	"energy": 3,
+	"reach": 10,
+	"rotate": 180,
+	"strength": 50,
+	"sight": {
+		"distance": 16,
+		"width":3.14
+	}
+}
