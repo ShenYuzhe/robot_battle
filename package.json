@@ -4,6 +4,8 @@
         "async": "latest",
         "promise": "latest",
         "q": "latest",
-        "co": "latest"
+        "co": "latest",
+        "express": "latest",
+        "express-fileupload": "latest"
     }
 }

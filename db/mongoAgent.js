@@ -43,6 +43,7 @@ function insert(usr, data) {
 	var deferred = q.defer();
 	connectUser(usr, function(collection) {
 		collection.insert(data, function(err, result) {
+			console.log(data);
 			assert.equal(null, err);
 			deferred.resolve(result);
 		});
@@ -145,6 +146,16 @@ function getRobotByNameModel(usr, name, model) {
 }
 
 var merchant = "merchant"
+function createDriver(name, dirverPath) {
+	return  insert(merchant,
+		{
+			'type': 'driver',
+			'name': name,
+			'path': driverPath
+		});
+}
+
+
 function assignUserRobot(usr, model, name) {
 	return co(function* () {
 		var robot = yield getRobotByModel(merchant, model);
@@ -180,5 +191,28 @@ exports.createRobot = createRobot;
 		deferred.resolve("hello world");
 		return "hello world";
 	}
-).then(function(val) {console.log(val)});
-*/
+).then(function(val) {console.log(val)});*/
+
+function testInsert(data) {
+	return co(function* () {
+		insert(merchant, data);
+	});
+}
+
+co(
+	function* () {
+		yield testInsert({'a': 'b'});
+		yield testInsert({'c': 'd'});
+	}
+);
+
+
+
+
+
+
+
+
+
+
+
