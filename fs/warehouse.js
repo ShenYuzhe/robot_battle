@@ -7,15 +7,15 @@ function mkdirIfNotExist(path) {
 		fs.mkdirSync(path);
 }
 
-var workdir = function() {
+var workDir = function() {
 	var basedir = '/tmp/robot';
 	mkdirIfNotExist(basedir);
 	return basedir;
 }();
-exports.workdir = workdir;
+exports.workDir = workDir;
 
 var shopDir = function() {
-	var shopdir = workdir + '/shop';
+	var shopdir = workDir + '/shop';
 	mkdirIfNotExist(shopdir);
 	return shopdir;
 }();
@@ -36,11 +36,16 @@ var robotShopDir = function() {
 exports.shopDir = shopDir;
 
 var driverShopDir = function() {
-	var driverDir = shopDir() + '/drivers';
+	var driverDir = shopDir + '/drivers';
 	mkdirIfNotExist(driverDir);
 	return driverDir;
+}();
+exports.driverShopDir = driverShopDir;
+
+function shopDriverByName(name) {
+	return require(driverShopDir + '/' + name).driver;
 }
-exports.driverDir = driverDir;
+exports.shopDriverByName = shopDriverByName;
 
 function createUsrWarehouse(usr) {
 	return mkdirIfNotExist(usrRootDir + '/' + usr);
@@ -62,3 +67,4 @@ function mvExFile(file, path) {
 	});
 	return deferred.promise;
 }
+exports.mvExFile = mvExFile;

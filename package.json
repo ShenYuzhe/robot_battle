@@ -6,6 +6,8 @@
         "q": "latest",
         "co": "latest",
         "express": "latest",
-        "express-fileupload": "latest"
+        "express-fileupload": "latest",
+        "morgan": "latest",
+        "body-parser": "latest"
     }
 }

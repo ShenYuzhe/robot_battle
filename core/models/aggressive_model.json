@@ -1,0 +1,16 @@
+{
+	"name": "agressive",
+	"model": "aggressive",
+	"type": "robot",
+	"health": 300,
+	"attack": 100,
+	"arm": 10,
+	"energy": 3,
+	"reach": 15,
+	"rotate": 180,
+	"strength": 50,
+	"sight": {
+		"distance": 15,
+		"width": 3.14
+	}
+}

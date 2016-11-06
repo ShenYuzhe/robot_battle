@@ -1,5 +1,5 @@
-var aggressiveRobot = require('./models/aggressive').aggressiveRobot;
-var strongRobot = require('./models/strong').strongRobot;
+//var aggressiveRobot = require('./models/aggressive').aggressiveRobot;
+//var strongRobot = require('./models/strong').strongRobot;
 var geometry = require('../utils/geometry');
 var data_struct = require('../utils/data_struct');
 var Board = geometry.Board;
@@ -33,7 +33,7 @@ ContextBuilder.prototype.build = function() {
     };
 }
 
-PlaygroundBuilder = function() {
+function PlaygroundBuilder() {
 
 
     var Playground = function(height, width) {}
@@ -116,6 +116,13 @@ PlaygroundBuilder = function() {
             this.executeAct(actSummaryL, actSummaryR);
 
         }
+        if(this.robotL.isAlive())
+            return this.robotL.getName();
+
+        if (this.robotR.isAlive())
+            return this.robotR.getName();
+
+        return 'nobody';
     }
 
     PlaygroundBuilder.prototype.withGrid = function(h, w) {
@@ -136,9 +143,10 @@ PlaygroundBuilder = function() {
         return playground;
     }
 }
+exports.PlaygroundBuilder = PlaygroundBuilder;
 
-var playground = new PlaygroundBuilder()
+/*var playground = new PlaygroundBuilder()
     .withGrid(100, 100).withRobots(aggressiveRobot, strongRobot).build();
 
-playground.fight();
+playground.fight();*/
 

@@ -38,3 +38,4 @@ aggressiveDriver.onAttack = function(hurt) {
 }
 
 exports.aggressiveRobot = new Robot(attributeAgressive, aggressiveDriver);
+exports.driver = aggressiveDriver;

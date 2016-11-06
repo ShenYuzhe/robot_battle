@@ -146,7 +146,7 @@ function getRobotByNameModel(usr, name, model) {
 }
 
 var merchant = "merchant"
-function createDriver(name, dirverPath) {
+function createDriver(name, driverPath) {
 	return  insert(merchant,
 		{
 			'type': 'driver',
@@ -154,7 +154,23 @@ function createDriver(name, dirverPath) {
 			'path': driverPath
 		});
 }
+exports.createDriver = createDriver;
 
+function getShopRobotByModel(model) {
+	return co (
+		function *() {
+			return (yield getRobotByModel(merchant, model))[0];
+		}
+	);
+}
+exports.getShopRobotByModel = getShopRobotByModel;
+
+function listDriverShop() {
+	return read(merchant, new QueryBuilder()
+								.withType('driver')
+								.build());
+}
+exports.listDriverShop = listDriverShop;
 
 function assignUserRobot(usr, model, name) {
 	return co(function* () {
@@ -184,6 +200,13 @@ function createRobot(robot) {
 }
 exports.createRobot = createRobot;
 
+function listRobotShop() {
+	return read(merchant, new QueryBuilder()
+								.withType('robot')
+								.build());
+}
+exports.listRobotShop = listRobotShop;
+
 /* sample usage of co library*/
 /*co(
 	function* () {
@@ -191,21 +214,22 @@ exports.createRobot = createRobot;
 		deferred.resolve("hello world");
 		return "hello world";
 	}
-).then(function(val) {console.log(val)});*/
+).then(function(val) {console.log(val)});
 
 function testInsert(data) {
 	return co(function* () {
 		insert(merchant, data);
+		return 1;
 	});
 }
 
 co(
 	function* () {
-		yield testInsert({'a': 'b'});
-		yield testInsert({'c': 'd'});
+		console.log(yield testInsert({'a': 'b'}));
+		console.log(yield testInsert({'c': 'd'}));
 	}
 );
-
+*/
 
 
 

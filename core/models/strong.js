@@ -19,5 +19,5 @@ attributeStrong = {
 
 // instance for strong but gentle user
 strongDriver = new Driver('Jerry');
-
+exports.driver = strongDriver;
 exports.strongRobot = new Robot(attributeStrong, strongDriver);
