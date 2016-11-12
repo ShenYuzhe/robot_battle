@@ -2,7 +2,6 @@ var MongoClient = require('mongodb').MongoClient;
 var assert = require('assert');
 
 var url = 'mongodb://127.0.0.1:27017/test';
-var dbClient;
 
 var insert = function(db) { 
     var collection = db.collection('documents');
