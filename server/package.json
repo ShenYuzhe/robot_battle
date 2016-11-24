@@ -8,6 +8,9 @@
         "express": "latest",
         "express-fileupload": "latest",
         "morgan": "latest",
-        "body-parser": "latest"
+        "body-parser": "latest",
+        "express-ws": "latest",
+        "queue": "latest",
+        "random-token": "latest"
     }
 }

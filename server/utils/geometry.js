@@ -149,7 +149,8 @@ function Sector(vec, width) {
 	return {
 		'radius': vec.magnitude,
 		'start': start,
-		'end': end
+		'end': end,
+        'base': baseArch
 	};
 
 }

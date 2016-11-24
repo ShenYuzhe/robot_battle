@@ -115,6 +115,14 @@ Robot.prototype.getName = function() {
     return this.driver.name;
 }
 
+Robot.prototype.getHealth = function() {
+    return this.attribute.health;
+}
+
+Robot.prototype.getDirection = function() {
+    return this.sight.base;
+}
+
 Robot.prototype.isAlive = function() {
     return this.attribute.health > 0;
 }

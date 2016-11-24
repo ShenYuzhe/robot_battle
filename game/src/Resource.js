@@ -31,7 +31,9 @@
  ****************************************************************************/
 
 var res = {
-    background: "res/w.png"
+    background: "res/background_pink.png",
+    yellow_robot: "res/ep_1.png",
+    blue_robot: "res/ep_2.png"
 };
 
 var g_mainmenu = [

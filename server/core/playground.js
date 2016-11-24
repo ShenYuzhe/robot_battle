@@ -33,6 +33,61 @@ ContextBuilder.prototype.build = function() {
     };
 }
 
+RoundReportBuilder = function() {}
+
+RoundReportBuilder.prototype.withLeftRobot = function(leftRobot) {
+    this.leftRobot = leftRobot;
+    return this;
+}
+
+RoundReportBuilder.prototype.withRightRobot = function(rightRobot) {
+    this.rightRobot = rightRobot;
+    return this;
+}
+
+RoundReportBuilder.prototype.build = function() {
+    return {
+        'left_robot': this.leftRobot,
+        'right_robot': this.rightRobot
+    };
+}
+
+RobotReportBuilder = function() {}
+
+RobotReportBuilder.prototype.withHealth = function(health) {
+    this.health = health;
+    return this;
+}
+
+RobotReportBuilder.prototype.withPosition = function(position) {
+    this.position = position;
+    return this;
+}
+
+RobotReportBuilder.prototype.withDirection = function(direction) {
+    this.direction = direction;
+    return this;
+}
+
+RobotReportBuilder.prototype.withAttack = function(attack) {
+    this.attack = attack;
+    return this;
+}
+
+RobotReportBuilder.prototype.withDefense = function(defense) {
+    this.defense = defense;
+    return this;
+}
+
+RobotReportBuilder.prototype.build() = function() {
+    return {
+        'health': this.health,
+        'position': this.position,
+        'attack': this.attack,
+        'defense': this.defense
+    };
+}
+
 function PlaygroundBuilder() {
 
 
@@ -97,7 +152,7 @@ function PlaygroundBuilder() {
             this.robotL.onAttack(summaryR.attack);
     }
 
-    Playground.prototype.fight = function(robotL, robotR) {
+    Playground.prototype.fight = function(callback) {
 
         while(this.robotL.isAlive() && this.robotR.isAlive()) {
             var viewL = this.updateSight(this.robotL),
@@ -114,7 +169,24 @@ function PlaygroundBuilder() {
                 actSummaryR = this.robotR.onAct(contextR);
 
             this.executeAct(actSummaryL, actSummaryR);
-
+            
+            var leftRobotReport = new RobotReportBuilder()
+                                    .withHealth(this.robotL.getHealth())
+                                    .withPosition(this.robotL.loc)
+                                    .withDirection(this.robotL.getDirection())
+                                    .withAttack(actSummaryL.attack)
+                                    .withDefense(actSummaryL.defense).build(),
+                rightRobotReport = new RobotReportBuilder()
+                                    .withHealth(this.robotR.getHealth())
+                                    .withPosition(this.robotR.loc)
+                                    .withDirection(this.robotR.getDirection()).
+                                    .withAttack(actSummaryR.attack)
+                                    .withDefense(actSummaryR.defense).build();
+            var roundReport = new RoundReportBuilder()
+                                .withLeftRobot(leftRobotReport)
+                                .withRightRobot(rightRobotReport)
+                                .build();
+            callback(roundReport);
         }
         if(this.robotL.isAlive())
             return this.robotL.getName();

@@ -80,7 +80,21 @@ function listDrivers(req, res) {
 }
 exports.listDrivers = listDrivers;
 
+var randomToken = require('random-token');
+var queue = require('queue');
+var tokenDigits = 16;
+
+var trainGround = {};
+exports.trainGround = trainGround;
+
 function fight(req, res) {
+
+    var token = randomToken(tokenDigits);
+    trainGround[token] = queue();
+    res.status(201).send({
+        'battle_token': token,
+        'message': 'please refer to this token to watch battle'}
+    );
 
 	var driverLName = req.query.driver1,
 		driverRName = req.query.driver2,
@@ -102,13 +116,9 @@ function fight(req, res) {
 				.withRobots(robotRhs, robotLhs)
 				.build();
 
-			var winner = fightGround.fight();
-			res.status(200).send(winner + ' wins');
-		}
-	).catch(
-		(err) => {
-			console.log(err);
-			res.status(500).send('drivers initiated failing');
+			var winner = fightGround.fight((roundReport) => {
+                trainGround[token].push(roundReport);
+            });
 		}
 	);
 }
