@@ -3,48 +3,70 @@ var GameLayer = cc.Layer.extend({
     left_robot: null,
     right_robot: null,
 
-    startFight: function(callback) {
+    token: null,
 
+    sendRequest: function(url, method, callback) {
         var xhr = cc.loader.getXMLHttpRequest();  
         
-        xhr.open("POST", "http://localhost:3000/fight?model1=strong&driver1=strong&model2=aggressive&driver2=aggressive");
-        //xhr.open("GET", "www.google.com");
-        var that = this;
-
+        xhr.open(method, url);
+        
         xhr.onreadystatechange = function () {
             if (xhr.readyState == 4 && xhr.status >= 200 && xhr.status <= 207) {
                 console.log(xhr.responseText);
 
-                callback(JSON.parse(xhr.responseText));
+                if (undefined != callback)
+                    callback(JSON.parse(xhr.responseText));
             }
         };
         
         xhr.send();
     },
 
+    startFight: function(ref) {
+        var url = 'http://localhost:3000/fight?model1=strong&driver1=strong&model2=aggressive&driver2=aggressive';
+        this.sendRequest(url, 'POST', (res) => {
+            ref.token = res.battle_token;
+        });
+    },
+
     websocket: null,
     webstate: false,
 
-    watchFight: function(token) {
+    updateUI: function(data) {
+        console.log(data);
+        var leftRobotData = data.left_robot,
+            rightRobotData = data.right_robot;
+        this.left_robot.setPosition(leftRobotData.position.x, leftRobotData.position.y);
+        this.left_robot.setRotation(leftRobotData.direction * 180 / Math.PI);
+        this.right_robot.setPosition(rightRobotData.position.x, rightRobotData.position.y);
+        this.right_robot.setRotation(rightRobotData.direction * 180 / Math.PI);
+    },
+
+    openChannel: function(ref) {
 
         var wsServer = 'ws://127.0.0.1:3000/watch';
         this.websocket  = new WebSocket(wsServer);
-        that = this;
         this.websocket.onopen = function() {
-            that.webstate = true;
+            ref.webstate = true;
             console.log('socket created');
             
         };
         this.websocket.onmessage = function(evt) {
-            console.log(evt.data);
+            var data = JSON.parse(evt.data);
+            if (undefined != data.winner) {
+                ref.websocket.close();
+                ref.webstate = false;
+            } else
+                ref.updateUI(data);
         }
 
     },
 
-    token: null,
-
     ctor:function () {
         this._super();
+
+        this.startFight(this);
+        this.openChannel(this);
 
         var size = cc.winSize;
 
@@ -66,26 +88,19 @@ var GameLayer = cc.Layer.extend({
         this.addChild(this.right_robot, 1);
 
         this.scheduleUpdate();
-
-        that = this;
-        this.startFight( (res) => {
-
-            console.log(res.battle_token);
-            
-            that.token = res.battle_token;
-            this.watchFight(res.battle_token);
-            //}, 10000);
-            
-        });        
+       
         return true;
     },
 
-    update: function(dt) {
+    watchFight: function(ref) {
         if (this.webstate && null != this.token)
             this.websocket.send(JSON.stringify({'action': 'token', 'token': this.token}));
+    },
+
+    update: function(dt) {
+        this.watchFight(this);
             
         this.left_robot.setPosition(this.left_robot.x + dt * 10, this.left_robot.y);
-        //console.log(this.left_robot.x);
     }
 });
 

@@ -81,6 +81,7 @@ RobotReportBuilder.prototype.withDefense = function(defense) {
 RobotReportBuilder.prototype.build = function() {
     return {
         'health': this.health,
+        'direction': this.direction,
         'position': this.position,
         'attack': this.attack,
         'defense': this.defense
