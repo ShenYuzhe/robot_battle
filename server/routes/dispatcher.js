@@ -85,12 +85,12 @@ var queue = require('queue');
 var tokenDigits = 16;
 
 var trainGround = {};
-exports.trainGround = trainGround;
 
 function fight(req, res) {
 
-    var token = randomToken(tokenDigits);
-    trainGround[token] = queue();
+    var token = randomToken(tokenDigits),
+        q = queue();
+    trainGround[token] = q;
     res.status(201).send({
         'battle_token': token,
         'message': 'please refer to this token to watch battle'}
@@ -117,10 +117,38 @@ function fight(req, res) {
 				.build();
 
 			var winner = fightGround.fight((roundReport) => {
-                trainGround[token].push(roundReport);
+                q.push(roundReport);
             });
+            
+            q.push({'winner': winner});
 		}
-	);
+	).catch (
+        (err) => {
+            console.log(err);
+        }    
+    );
 }
 exports.fight = fight;
 
+function watch (ws, req) {
+    reqList = {
+        'token': (msgObj) => {
+            var token = msgObj.token;
+            var q = trainGround[token];
+            if (undefined == q)
+                return;
+            var resMsg = null;
+            if (undefined == (resMsg = q.shift()))
+                return;
+            ws.send(JSON.stringify(resMsg));
+            if (undefined != resMsg.winner)
+                delete trainGround[token];        
+        }
+    };
+    
+    ws.on('message', (msg) => {
+        var msgObj = JSON.parse(msg);
+        reqList[msgObj.action](msgObj);
+    });
+};
+exports.watch = watch;

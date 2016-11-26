@@ -23,6 +23,11 @@ console.log('robot battle listening on port 3000');
 app.use(logger('dev'));
 app.use(bodyParser());
 app.use(fileUpload());
+app.use(express.static('../game'));
+app.get('/robot', function(req, res) {
+    res.send('dddd');
+});
+
 /* robot related apis */
 app.put('/robot/:model', dispatcher.createRobot);
 app.get('/robot/list', dispatcher.listRobots);
@@ -35,12 +40,4 @@ app.get('/driver/list', dispatcher.listDrivers);
 app.post('/fight', dispatcher.fight);
 
 /* initiation of websocket */
-app.ws('/watch', function(ws, req) {
-    ws.on('message', (msg) => {
-        var msgObj = JSON.parse(msg);
-        var token = msgObj;
-        var q = dispatcher.trainGround[token];
-        while (q.length > 0)
-            ws.send(q.pop());
-    });
-});
+app.ws('/watch', dispatcher.watch);

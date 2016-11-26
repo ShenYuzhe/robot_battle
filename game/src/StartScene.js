@@ -3,29 +3,50 @@ var GameLayer = cc.Layer.extend({
     left_robot: null,
     right_robot: null,
 
-    testWs: function() {
+    startFight: function(callback) {
 
-        var wsServer = 'ws://127.0.0.1:3000/echo';
-        var websocket = new WebSocket(wsServer);
-        websocket.onopen = function() {
-            console.log('socket created');
-            websocket.send(JSON.stringify({'name': 'tom'}));
+        var xhr = cc.loader.getXMLHttpRequest();  
+        
+        xhr.open("POST", "http://localhost:3000/fight?model1=strong&driver1=strong&model2=aggressive&driver2=aggressive");
+        //xhr.open("GET", "www.google.com");
+        var that = this;
+
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4 && xhr.status >= 200 && xhr.status <= 207) {
+                console.log(xhr.responseText);
+
+                callback(JSON.parse(xhr.responseText));
+            }
         };
-        websocket.onmessage = function(evt) {
+        
+        xhr.send();
+    },
+
+    websocket: null,
+    webstate: false,
+
+    watchFight: function(token) {
+
+        var wsServer = 'ws://127.0.0.1:3000/watch';
+        this.websocket  = new WebSocket(wsServer);
+        that = this;
+        this.websocket.onopen = function() {
+            that.webstate = true;
+            console.log('socket created');
+            
+        };
+        this.websocket.onmessage = function(evt) {
             console.log(evt.data);
         }
 
     },
 
+    token: null,
+
     ctor:function () {
         this._super();
 
         var size = cc.winSize;
-
-          /*var helloLabel = new cc.LabelTTF("Hello World", "", 38);
-          helloLabel.x = size.width / 2;
-          helloLabel.y = size.height / 2;
-          this.addChild(helloLabel);*/
 
         var sprite = cc.Sprite.create(res.background);
         sprite.setPosition(size.width / 2, size.height / 2);
@@ -45,11 +66,24 @@ var GameLayer = cc.Layer.extend({
         this.addChild(this.right_robot, 1);
 
         this.scheduleUpdate();
-        this.testWs();
+
+        that = this;
+        this.startFight( (res) => {
+
+            console.log(res.battle_token);
+            
+            that.token = res.battle_token;
+            this.watchFight(res.battle_token);
+            //}, 10000);
+            
+        });        
         return true;
     },
 
     update: function(dt) {
+        if (this.webstate && null != this.token)
+            this.websocket.send(JSON.stringify({'action': 'token', 'token': this.token}));
+            
         this.left_robot.setPosition(this.left_robot.x + dt * 10, this.left_robot.y);
         //console.log(this.left_robot.x);
     }

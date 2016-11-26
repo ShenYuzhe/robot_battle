@@ -1,9 +1,8 @@
-//var aggressiveRobot = require('./models/aggressive').aggressiveRobot;
-//var strongRobot = require('./models/strong').strongRobot;
 var geometry = require('../utils/geometry');
 var data_struct = require('../utils/data_struct');
 var Board = geometry.Board;
 var calDistance = geometry.calDistance;
+var scanSector = geometry.scanSector;
 var size = data_struct.size;
 
 
@@ -79,7 +78,7 @@ RobotReportBuilder.prototype.withDefense = function(defense) {
     return this;
 }
 
-RobotReportBuilder.prototype.build() = function() {
+RobotReportBuilder.prototype.build = function() {
     return {
         'health': this.health,
         'position': this.position,
@@ -179,7 +178,7 @@ function PlaygroundBuilder() {
                 rightRobotReport = new RobotReportBuilder()
                                     .withHealth(this.robotR.getHealth())
                                     .withPosition(this.robotR.loc)
-                                    .withDirection(this.robotR.getDirection()).
+                                    .withDirection(this.robotR.getDirection())
                                     .withAttack(actSummaryR.attack)
                                     .withDefense(actSummaryR.defense).build();
             var roundReport = new RoundReportBuilder()

@@ -1,6 +1,7 @@
 var data_struct = require('./data_struct');
 var Queue = data_struct.Queue;
 var Array2D = data_struct.Array2D;
+var math_tool = require('./math_tools');
 const assert = require('assert');
 
 function Point(x, y) {
