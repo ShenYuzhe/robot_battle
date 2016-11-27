@@ -151,6 +151,7 @@ Robot.prototype.ActTable = {
             return calDistance(robot.loc, action.point) <= robot.attribute.reach;
         },
         'act': function(robot, action) {
+            robot.prevLoc = robot.loc;
             robot.loc = action.point;
         }
     },

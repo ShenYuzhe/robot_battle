@@ -23,12 +23,24 @@ ContextBuilder.prototype.withShape = function(shape) {
     return this;
 }
 
+ContextBuilder.prototype.withLocation = function(loc) {
+    this.loc = loc;
+    return  this;
+}
+
+ContextBuilder.prototype.withSight = function(sight) {
+    this.sight = sight;
+    return this;
+}
+
 ContextBuilder.prototype.build = function() {
 
     return {
-        'board_shape': this.shape,
+        'shape': this.shape,
         'items': this.items,
-        'hurt': this.hurt
+        'hurt': this.hurt,
+        'loc': this.loc,
+        'sight': this.sight
     };
 }
 
@@ -105,9 +117,9 @@ function PlaygroundBuilder() {
     }
 
     Playground.prototype.moveOnBoard = function(robot, loc) {
-        var oldLoc = robot.getLocation();
-        if (oldLoc != undefined)
-            delete this.board[oldLoc.y][oldLoc.x].item;
+        var prevLoc = robot.prevLoc;
+        if (undefined != prevLoc)
+            delete this.board[prevLoc.y][prevLoc.x].item;
         this.board[loc.y][loc.x].item = robot;
     }
 
@@ -121,11 +133,15 @@ function PlaygroundBuilder() {
     Playground.prototype.updateSight = function(robot) {
 
         var view = [];
-
+        var sector = [];
         scanSector(robot.sight, robot.loc, this.board, function(e) {
-            if (e.item != undefined)
+            sector.push(e);
+            if (undefined != e.item 
+                && !( e.x == robot.loc.x && e.y == robot.loc.y))
                 view.push(e.item);
         });
+        while ( undefined != (e = sector.pop()))
+            e.covered = false;
         return view;
     }
 
@@ -134,7 +150,7 @@ function PlaygroundBuilder() {
         var sz = size(this.board);
         var x = sz[0], y = sz[1];
         var robotY = Math.floor(y / 2),
-            xL = Math.floor(x / 3), xR = Math.floor(2 * x / 3);
+            xL = Math.floor(x * 2 / 3), xR = Math.floor(3 * x / 4);
         var initL = Point(xL, robotY), initR = Point(xR, robotY);
         this.moveRobot(this.robotL, initL);
         this.moveRobot(this.robotR, initR);
@@ -144,6 +160,8 @@ function PlaygroundBuilder() {
     }
 
     Playground.prototype.executeAct = function(summaryL, summaryR) {
+        this.moveRobot(this.robotL, this.robotL.loc);
+        this.moveRobot(this.robotR, this.robotR.loc);
         var distance = calDistance(this.robotL.getLocation(),
             this.robotR.getLocation());
         //if (distance <= this.robotL.attribute.arm)
@@ -157,13 +175,23 @@ function PlaygroundBuilder() {
         while(this.robotL.isAlive() && this.robotR.isAlive()) {
             var viewL = this.updateSight(this.robotL),
                 viewR = this.updateSight(this.robotR);
+
+            //this.board[50][75].covered = false;
+            //this.board[50][66].covered = false;
+
+            //console.log(this.board[50][75]);
+
             var contextL = new ContextBuilder()
                             .withItems(viewL)
                             .withShape(this.shape)
+                            .withLocation(this.robotL.loc)
+                            .withSight(this.robotL.sight)
                             .build(),
                 contextR = new ContextBuilder()
                             .withItems(viewR)
                             .withShape(this.shape)
+                            .withLocation(this.robotR.loc)
+                            .withSight(this.robotR)
                             .build();
             var actSummaryL = this.robotL.onAct(contextL),
                 actSummaryR = this.robotR.onAct(contextR);
@@ -210,6 +238,7 @@ function PlaygroundBuilder() {
 
     PlaygroundBuilder.prototype.build = function() {
         var playground = new Playground();
+        //console.log(this.grid);
         playground.initBoard(this.grid);
         playground.initRobot(this.robotLhs, this.robotRhs);
         return playground;

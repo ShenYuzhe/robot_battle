@@ -1,7 +1,9 @@
 var GameLayer = cc.Layer.extend({
 
     left_robot: null,
+    left_health: null,
     right_robot: null,
+    right_health: null,
 
     token: null,
 
@@ -33,13 +35,18 @@ var GameLayer = cc.Layer.extend({
     webstate: false,
 
     updateUI: function(data) {
+        var zoomScale = 9;
         console.log(data);
         var leftRobotData = data.left_robot,
             rightRobotData = data.right_robot;
-        this.left_robot.setPosition(leftRobotData.position.x, leftRobotData.position.y);
+        this.left_robot.setPosition(leftRobotData.position.x * zoomScale,
+            leftRobotData.position.y * zoomScale);
         this.left_robot.setRotation(leftRobotData.direction * 180 / Math.PI);
-        this.right_robot.setPosition(rightRobotData.position.x, rightRobotData.position.y);
+        this.right_robot.setPosition(rightRobotData.position.x * zoomScale,
+            rightRobotData.position.y * zoomScale);
         this.right_robot.setRotation(rightRobotData.direction * 180 / Math.PI);
+        this.left_health.setString('left health: ' + leftRobotData.health);
+        this.right_health.setString('right health: ' + rightRobotData.health);
     },
 
     openChannel: function(ref) {
@@ -62,6 +69,31 @@ var GameLayer = cc.Layer.extend({
 
     },
 
+    initSprite: function(resource, position, degree, scale) {
+        var sprite = cc.Sprite.create(resource);
+        sprite.setPosition(position.x, position.y);
+        sprite.setRotation(degree);
+        sprite.setScale(scale);
+        return sprite;
+    },
+
+    initHealth: function(robot, position) {
+
+        var healthBar = cc.LabelTTF.create(robot + ' health ', 'Arial', 20);
+        healthBar.setPosition(position.x, position.y);
+        /*var healthBar =
+            cc.ProgressTimer.create(this.initSprite(res.health_bar, position, 0, 0.4));
+        healthBar.setType(cc.PROGRESS_TIMER_TYPE_BAR);
+        healthBar.setBarChangeRate(cc.p(1, 0));
+        healthBar.setMidpoint(cc.p(0, 0));
+        
+        healthBar.setPosition(cc.p(position.x, position.y)); 
+
+        
+        return healthBar;*/
+        return healthBar;
+    },
+
     ctor:function () {
         this._super();
 
@@ -70,24 +102,29 @@ var GameLayer = cc.Layer.extend({
 
         var size = cc.winSize;
 
-        var sprite = cc.Sprite.create(res.background);
-        sprite.setPosition(size.width / 2, size.height / 2);
-        sprite.setScale(0.6);
-        this.addChild(sprite, 0);
+        var background = this.initSprite(res.background,
+            {'x': size.width / 2, 'y': size.height / 2}, 0, 1);
+        this.addChild(background, 0);
 
-        this.left_robot = cc.Sprite.create(res.yellow_robot);
-        this.left_robot.setPosition(size.width / 3, size.height / 2);
-        this.left_robot.setRotation(90);
-        this.left_robot.setScale(0.6);
+        this.left_robot = this.initSprite(res.yellow_robot,
+            {'x': size.width / 3, 'y': size.height / 2}, 0, 0.6);
         this.addChild(this.left_robot, 1);
 
-        this.right_robot = cc.Sprite.create(res.blue_robot);
-        this.right_robot.setPosition(size.width * 2 / 3, size.height / 2);
-        this.right_robot.setRotation(270);
-        this.right_robot.setScale(0.6);
+        this.right_robot = this.initSprite(res.blue_robot,
+            {'x': size.width * 2 / 3, 'y': size.height / 2}, 0, 0.6);
         this.addChild(this.right_robot, 1);
 
+        this.left_health = this.initHealth('left robot',
+            {'x': size.width * 0.1, 'y': size.height * 0.9 });
+        this.addChild(this.left_health, 1);
+
+        this.right_health = this.initHealth('right robot',
+            {'x': size.width * 0.8, 'y': size.height * 0.9});
+        this.addChild(this.right_health, 1);
+
         this.scheduleUpdate();
+
+
        
         return true;
     },
@@ -97,10 +134,14 @@ var GameLayer = cc.Layer.extend({
             this.websocket.send(JSON.stringify({'action': 'token', 'token': this.token}));
     },
 
+    lastUpdateTime: null,
+
     update: function(dt) {
-        this.watchFight(this);
-            
-        this.left_robot.setPosition(this.left_robot.x + dt * 10, this.left_robot.y);
+        var currTime = new Date().getTime();
+        if (null == this.lastUpdateTime || currTime - this.lastUpdateTime >= 1000) {
+            this.watchFight(this);
+            this.lastUpdateTime = currTime;
+        }
     }
 });
 
