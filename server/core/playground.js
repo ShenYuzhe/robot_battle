@@ -133,15 +133,13 @@ function PlaygroundBuilder() {
     Playground.prototype.updateSight = function(robot) {
 
         var view = [];
-        var sector = [];
+
         scanSector(robot.sight, robot.loc, this.board, function(e) {
-            sector.push(e);
             if (undefined != e.item 
                 && !( e.x == robot.loc.x && e.y == robot.loc.y))
                 view.push(e.item);
         });
-        while ( undefined != (e = sector.pop()))
-            e.covered = false;
+
         return view;
     }
 

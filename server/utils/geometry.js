@@ -209,21 +209,25 @@ function scanSector(sector, origin, board, callback) {
 	var x = board[0].length;
 
 	var q = new Queue();
+	var viewed = [];
 	q.push(origin);
 
 	while (!q.isEmpty()) {
 
 		var curr = q.pop();
+
 		if (curr.x < 0 || curr.x > x
 			|| curr.y < 0 || curr.y > y)
 			continue;
 
 		if (board[curr.y][curr.x].covered == true)
 			continue;
-		board[curr.y][curr.x].covered = true;
 
 		if (!withinSector(sector, origin, curr))
 			continue;
+
+		board[curr.y][curr.x].covered = true;
+		viewed.push(board[curr.y][curr.x]);
 
 		callback(board[curr.y][curr.x]);
 
@@ -232,5 +236,8 @@ function scanSector(sector, origin, board, callback) {
 		q.push(Point(curr.x, curr.y - 1));
 		q.push(Point(curr.x, curr.y + 1));
 	}
+
+	while (undefined != (p = viewed.pop()))
+		p.covered = false;
 }
 exports.scanSector = scanSector;
