@@ -54,6 +54,22 @@ Rotate = function(degree, isClockwise) {
 }
 exports.Rotate = Rotate;
 
+function addRotation(rotations) {
+    
+    var res = Rotate(0);
+    for (i in arguments)
+        if (undefined == arguments[i])
+            continue;
+        else if (arguments[i].isClockwise)
+            res.degree += arguments[i].degree;
+        else
+            res.degree -= arguments[i].degree;
+    if (res.degree < 0)
+        res.isClockwise = false;
+    return res;
+}
+exports.addRotation = addRotation;
+
 /* Below defines items provided by playground to robot */
 Item = function(type, vector) {
 

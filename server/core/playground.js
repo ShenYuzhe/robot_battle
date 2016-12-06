@@ -4,7 +4,7 @@ var Board = geometry.Board;
 var calDistance = geometry.calDistance;
 var scanSector = geometry.scanSector;
 var size = data_struct.size;
-
+var sleep = require('sleep');
 
 ContextBuilder = function() {}
 
@@ -80,6 +80,11 @@ RobotReportBuilder.prototype.withDirection = function(direction) {
     return this;
 }
 
+RobotReportBuilder.prototype.withRotation = function(rotation) {
+    this.rotation = rotation;
+    return this;
+}
+
 RobotReportBuilder.prototype.withAttack = function(attack) {
     this.attack = attack;
     return this;
@@ -94,6 +99,7 @@ RobotReportBuilder.prototype.build = function() {
     return {
         'health': this.health,
         'direction': this.direction,
+        'rotation': this.rotation,
         'position': this.position,
         'attack': this.attack,
         'defense': this.defense
@@ -116,10 +122,25 @@ function PlaygroundBuilder() {
         this.initRobotsLoc();
     }
 
+    Playground.prototype.setBoarderLoc = function(robot, loc) {
+        var height = size(this.board)[1],
+            width = size(this.board)[0];
+        if (loc.x < 0)
+            loc.x = 0;
+        if (loc.x >= width)
+            loc.x = width - 1;
+        if (loc.y < 0)
+            loc.y = 0;
+        if (loc.y >= height)
+            loc.y = height - 1;
+        robot.loc = loc;
+    },
+
     Playground.prototype.moveOnBoard = function(robot, loc) {
+        this.setBoarderLoc(robot, loc);
         var prevLoc = robot.prevLoc;
         if (undefined != prevLoc)
-            delete this.board[prevLoc.y][prevLoc.x].item;
+            delete this.board[prevLoc.y][prevLoc.x].item; 
         this.board[loc.y][loc.x].item = robot;
     }
 
@@ -133,7 +154,7 @@ function PlaygroundBuilder() {
     Playground.prototype.updateSight = function(robot) {
 
         var view = [];
-
+    
         scanSector(robot.sight, robot.loc, this.board, function(e) {
             if (undefined != e.item 
                 && !( e.x == robot.loc.x && e.y == robot.loc.y))
@@ -148,7 +169,7 @@ function PlaygroundBuilder() {
         var sz = size(this.board);
         var x = sz[0], y = sz[1];
         var robotY = Math.floor(y / 2),
-            xL = Math.floor(x * 2 / 3), xR = Math.floor(3 * x / 4);
+            xL = Math.floor(x / 3), xR = Math.floor(2 * x / 3);
         var initL = Point(xL, robotY), initR = Point(xR, robotY);
         this.moveRobot(this.robotL, initL);
         this.moveRobot(this.robotR, initR);
@@ -160,67 +181,74 @@ function PlaygroundBuilder() {
     Playground.prototype.executeAct = function(summaryL, summaryR) {
         this.moveRobot(this.robotL, this.robotL.loc);
         this.moveRobot(this.robotR, this.robotR.loc);
+            //console.log(this.robotL.loc, this.robotR.loc);
         var distance = calDistance(this.robotL.getLocation(),
             this.robotR.getLocation());
-        //if (distance <= this.robotL.attribute.arm)
+        if (distance <= this.robotL.attribute.arm)
             this.robotR.onAttack(summaryL.attack);
-        //if (distance <= this.robotR.attribute.arm)
+        else
+            summaryL.attack = 0; 
+        if (distance <= this.robotR.attribute.arm)
             this.robotL.onAttack(summaryR.attack);
+        else
+            summaryR.attack = 0;
+    }
+
+    Playground.prototype.fightLoop = function(ref, callback) {
+        if (!this.robotL.isAlive() || !this.robotR.isAlive()) {
+            var winner = 'nobody';
+            if (this.robotL.isAlive())
+                winner = this.robotL.getName();
+            if (this.robotR.isAlive())
+                winner = this.robotR.getName();
+            callback({'winner': winner});
+            return;
+        }
+        var viewL = this.updateSight(this.robotL),
+            viewR = this.updateSight(this.robotR);
+        var contextL = new ContextBuilder()
+                        .withItems(viewL)
+                        .withShape(this.shape)
+                        .withLocation(this.robotL.loc)
+                        .withSight(this.robotL.sight)
+                        .build(),
+            contextR = new ContextBuilder()
+                        .withItems(viewR)
+                        .withShape(this.shape)
+                        .withLocation(this.robotR.loc)
+                        .withSight(this.robotR)
+                        .build();
+        var actSummaryL = this.robotL.onAct(contextL),
+            actSummaryR = this.robotR.onAct(contextR);
+        //console.log(actSummaryL.location, actSummaryR.location);
+        this.executeAct(actSummaryL, actSummaryR);
+        
+        var leftRobotReport = new RobotReportBuilder()
+                                .withHealth(this.robotL.getHealth())
+                                .withPosition(this.robotL.loc)
+                                .withDirection(this.robotL.getDirection())
+                                .withRotation(actSummaryL.rotation)
+                                .withAttack(actSummaryL.attack)
+                                .withDefense(actSummaryL.defense).build(),
+            rightRobotReport = new RobotReportBuilder()
+                                .withHealth(this.robotR.getHealth())
+                                .withPosition(this.robotR.loc)
+                                .withDirection(this.robotR.getDirection())
+                                .withRotation(actSummaryR.rotation)
+                                .withAttack(actSummaryR.attack)
+                                .withDefense(actSummaryR.defense).build();
+        var roundReport = new RoundReportBuilder()
+                            .withLeftRobot(leftRobotReport)
+                            .withRightRobot(rightRobotReport)
+                            .build();
+        callback(roundReport);
+        setTimeout(function() {
+            ref.fightLoop(ref, callback);
+        }, 50);
     }
 
     Playground.prototype.fight = function(callback) {
-
-        while(this.robotL.isAlive() && this.robotR.isAlive()) {
-            var viewL = this.updateSight(this.robotL),
-                viewR = this.updateSight(this.robotR);
-
-            //this.board[50][75].covered = false;
-            //this.board[50][66].covered = false;
-
-            //console.log(this.board[50][75]);
-
-            var contextL = new ContextBuilder()
-                            .withItems(viewL)
-                            .withShape(this.shape)
-                            .withLocation(this.robotL.loc)
-                            .withSight(this.robotL.sight)
-                            .build(),
-                contextR = new ContextBuilder()
-                            .withItems(viewR)
-                            .withShape(this.shape)
-                            .withLocation(this.robotR.loc)
-                            .withSight(this.robotR)
-                            .build();
-            var actSummaryL = this.robotL.onAct(contextL),
-                actSummaryR = this.robotR.onAct(contextR);
-
-            this.executeAct(actSummaryL, actSummaryR);
-            
-            var leftRobotReport = new RobotReportBuilder()
-                                    .withHealth(this.robotL.getHealth())
-                                    .withPosition(this.robotL.loc)
-                                    .withDirection(this.robotL.getDirection())
-                                    .withAttack(actSummaryL.attack)
-                                    .withDefense(actSummaryL.defense).build(),
-                rightRobotReport = new RobotReportBuilder()
-                                    .withHealth(this.robotR.getHealth())
-                                    .withPosition(this.robotR.loc)
-                                    .withDirection(this.robotR.getDirection())
-                                    .withAttack(actSummaryR.attack)
-                                    .withDefense(actSummaryR.defense).build();
-            var roundReport = new RoundReportBuilder()
-                                .withLeftRobot(leftRobotReport)
-                                .withRightRobot(rightRobotReport)
-                                .build();
-            callback(roundReport);
-        }
-        if(this.robotL.isAlive())
-            return this.robotL.getName();
-
-        if (this.robotR.isAlive())
-            return this.robotR.getName();
-
-        return 'nobody';
+        this.fightLoop(this, callback);
     }
 
     PlaygroundBuilder.prototype.withGrid = function(h, w) {
@@ -236,7 +264,6 @@ function PlaygroundBuilder() {
 
     PlaygroundBuilder.prototype.build = function() {
         var playground = new Playground();
-        //console.log(this.grid);
         playground.initBoard(this.grid);
         playground.initRobot(this.robotLhs, this.robotRhs);
         return playground;

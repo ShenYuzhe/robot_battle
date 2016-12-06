@@ -1,5 +1,6 @@
 basic = require('./basic');
 geometry = require('../utils/geometry');
+math_tools = require('../utils/math_tools');
 
 Point = geometry.Point;
 calDistance = geometry.calDistance;
@@ -7,7 +8,6 @@ Vector = geometry.Vector;
 zoomVec = geometry.zoomVec;
 Sector = geometry.Sector;
 rotateSectorByDegree = geometry.rotateSectorByDegree;
-
 
 // definition for action
 Driver = function(name) {
@@ -51,6 +51,11 @@ ActSummaryBuilder.prototype.withLocation = function(loc) {
     return this;
 }
 
+ActSummaryBuilder.prototype.withRotation = function(rotation) {
+    this.rotation = rotation;
+    return this;
+}
+
 ActSummaryBuilder.prototype.build = function() {
 
     return {
@@ -58,6 +63,7 @@ ActSummaryBuilder.prototype.build = function() {
         'attack': this.attack,
         'defense': this.defense,
         'location': this.loc,
+        'rotation': this.rotation
     };
 
 }
@@ -90,6 +96,7 @@ Robot.prototype.roundInit =function() {
     this.charge = this.attribute.energy;
     this.roundAttack = 0;
     this.roundDefense = 0;
+    this.roundRotate = Rotate(0); 
 }
 
 Robot.prototype.onAttack = function(hurt) {
@@ -106,6 +113,7 @@ Robot.prototype.onAct = function(context) {
     return new ActSummaryBuilder()
         .withAttack(this.roundAttack)
         .withDefense(this.roundDefense)
+        .withRotation(this.roundRotate)
         .withLocation(this.loc)
         .withSight(this.sight)
         .build();
@@ -148,11 +156,14 @@ Robot.prototype.ActTable = {
 
     'MOVE': {
         'verify': function(robot, action) {
-            return calDistance(robot.loc, action.point) <= robot.attribute.reach;
+            var distance = calDistance(robot.loc, action.point);
+            return  distance.simEq(robot.attribute.reach, 0)
+                || distance <= robot.attribute.reach;
         },
         'act': function(robot, action) {
             robot.prevLoc = robot.loc;
             robot.loc = action.point;
+            //console.log(robot.getName(), robot.loc, action.point);
         }
     },
 
@@ -179,6 +190,7 @@ Robot.prototype.ActTable = {
             return action.degree <= robot.attribute.rotate;
         },
         'act': function(robot, action) {
+            robot.roundRotate = basic.addRotation(robot.roundRotate, action);
             rotateSectorByDegree(robot.sight, action.degree, action.isClockwise);
         }
     }

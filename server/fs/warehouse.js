@@ -2,13 +2,15 @@ var fs = require('fs');
 var q = require('q');
 var co = require('co');
 
+var config = require('../config');
+
 function mkdirIfNotExist(path) {
 	if (!fs.existsSync(path))
 		fs.mkdirSync(path);
 }
 
 var workDir = function() {
-	var basedir = '/tmp/robot';
+	var basedir = config.fs_root_dir;
 	mkdirIfNotExist(basedir);
 	return basedir;
 }();

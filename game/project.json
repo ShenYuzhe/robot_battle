@@ -3,6 +3,8 @@
     "frameRate"     : 60,
     "id"            : "gameCanvas",
     "renderMode"    : 1,
-    "jsList"        : ["src/StartScene.js",
-                       "src/Resource.js"]
+    "modules"		: ["editbox"],
+    "jsList"        : ["src/GameScene.js",
+                       "src/Resource.js",
+                       "src/CodeScene.js"]
 }

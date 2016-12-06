@@ -5,8 +5,8 @@ var math_tool = require('./math_tools');
 const assert = require('assert');
 
 function Point(x, y) {
-
-	return {'x': x, 'y': y};
+    
+	return {'x': Math.floor(x), 'y': Math.floor(y)};
 
 }
 exports.Point = Point;
@@ -30,6 +30,23 @@ function Vector(pFrom, pTo) {
 }
 exports.Vector = Vector;
 
+function PolarVector(degree, distance) {
+    var pTo = Point(distance * Math.cos(degree2Rad(degree)),
+            distance * Math.sin(degree2Rad(degree)));
+    return Vector(Point(0, 0), pTo);
+}
+exports.PolarVector = PolarVector;
+
+function calVectorDegree(vec) {
+    return rad2Degree(Math.atan2(vec.y, vec.x));
+}
+exports.calVectorDegree = calVectorDegree;
+
+function calVecPoint(loc, vec) {
+    return Point(loc.x + vec.x, loc.y + vec.y);
+}
+exports.calVecPoint = calVecPoint;
+
 function zoomVec(vec, multi) {
 
 	return Vector(Point(0, 0),
@@ -46,7 +63,6 @@ function dotProduct(vec1, vec2) {
 exports.dotProduct = dotProduct;
 
 function degree2Rad(degree) {
-
 	return degree * Math.PI / 180;
 }
 exports.degree2Rad = degree2Rad;
@@ -112,14 +128,15 @@ function arccos(vec) {
 }
 
 function calArc(vec) {
-	var normVec = normalize(vec);
+	/*var normVec = normalize(vec);
 	var sinArchs = arcsin(normVec), cosArchs = arccos(normVec);
 	for (i in sinArchs)
 		for ( j in cosArchs)
 			if (sinArchs[i].simEq(cosArchs[j]))
 				return sinArchs[i];
 		
-	return 0;
+	return 0;*/
+    return Math.atan2(vec.y, vec.x);
 }
 exports.calArc = calArc;
 
@@ -164,15 +181,16 @@ function rotateSector(sector, rad, isClockwise) {
 	sector.start += coef * rad;
 	sector.end += coef * rad;
 
-	while (start > 2 * Math.PI) {
+	while (sector.start > 2 * Math.PI) {
 		sector.start -= 2 * Math.PI;
 		sector.end -= 2 * Math.PI;
 	}
 
-	while (start < -Math.PI) { 
+	while (sector.start < -Math.PI) { 
 		sector.start += 2 * Math.PI;
 		sector.end += 2 * Math.PI;
 	}
+    sector.base = (sector.start + sector.end) / 2;
 }
 exports.rotateSector = rotateSector;
 
@@ -216,14 +234,14 @@ function scanSector(sector, origin, board, callback) {
 
 		var curr = q.pop();
 
-		if (curr.x < 0 || curr.x > x
-			|| curr.y < 0 || curr.y > y)
+		if (curr.x < 0 || curr.x >= x
+			|| curr.y < 0 || curr.y >= y)
 			continue;
-
-		if (board[curr.y][curr.x].covered == true)
+		
+        if (board[curr.y][curr.x].covered == true)
 			continue;
-
-		if (!withinSector(sector, origin, curr))
+		
+        if (!withinSector(sector, origin, curr))
 			continue;
 
 		board[curr.y][curr.x].covered = true;

@@ -34,7 +34,16 @@ var res = {
     background: 'res/background_pink.png',
     yellow_robot: 'res/ep_1.png',
     blue_robot: 'res/ep_2.png',
-    health_bar: 'res/red-bar.png'
+    health_bar: 'res/red-bar.png',
+    bullet: 'res/epb_1.png',
+    fireEffect_mp3: 'res/music/fireEffect.mp3',
+    fireEffect_wav: 'res/music/fireEffect.wav',
+    fireEffect_ogg: 'res/music/fireEffect.ogg',
+    explosion_plist : 'res/explosion.plist',
+    explosion_png : 'res/explosion.png',
+    input_bar: 'res/bar.png',
+    submit_button: 'res/submit.png',
+    play_png: 'res/play.png'
 };
 
 var g_mainmenu = [

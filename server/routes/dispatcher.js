@@ -116,11 +116,10 @@ function fight(req, res) {
 				.withRobots(robotRhs, robotLhs)
 				.build();
 
-			var winner = fightGround.fight((roundReport) => {
+			fightGround.fight((roundReport) => {
                 q.push(roundReport);
             });
             
-            q.push({'winner': winner});
 		}
 	).catch (
         (err) => {
