@@ -113,7 +113,7 @@ function fight(req, res) {
 
 			var fightGround = new playground.PlaygroundBuilder()
 				.withGrid(100, 100)
-				.withRobots(robotRhs, robotLhs)
+				.withRobots(robotLhs, robotRhs)
 				.build();
 
 			fightGround.fight((roundReport) => {

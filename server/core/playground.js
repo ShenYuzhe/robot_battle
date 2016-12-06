@@ -216,7 +216,7 @@ function PlaygroundBuilder() {
                         .withItems(viewR)
                         .withShape(this.shape)
                         .withLocation(this.robotR.loc)
-                        .withSight(this.robotR)
+                        .withSight(this.robotR.sight)
                         .build();
         var actSummaryL = this.robotL.onAct(contextL),
             actSummaryR = this.robotR.onAct(contextR);

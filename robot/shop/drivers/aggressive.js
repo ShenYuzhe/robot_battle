@@ -26,9 +26,10 @@ aggressiveDriver.act = function(attribute, context) {
     var enemy = items.pop();
     var actList = [];
     if (undefined == enemy) {
-        console.log('cannot see with sight:', sight);
+        //console.log('cannot see with sight:', sight);
         if (undefined == this.roundOdd || this.roundOdd) {
             var tarPt = calVecPoint(loc, PolarVector(rad2Degree(sight.base) + 80, attribute.reach));
+            
             this.roundOdd = false;
             return [Move(tarPt), Rotate(10, true)];
         }

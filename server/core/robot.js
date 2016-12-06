@@ -87,7 +87,7 @@ Robot.prototype.getLocation = function() {
  * defined to be normalized
  */
 Robot.prototype.setSight = function(vec) {
-    sightBase = zoomVec(vec, this.attribute.sight.distance);
+    var sightBase = zoomVec(vec, this.attribute.sight.distance);
     this.sight = Sector(sightBase, this.attribute.sight.width);
 }
 
@@ -163,7 +163,6 @@ Robot.prototype.ActTable = {
         'act': function(robot, action) {
             robot.prevLoc = robot.loc;
             robot.loc = action.point;
-            //console.log(robot.getName(), robot.loc, action.point);
         }
     },
 

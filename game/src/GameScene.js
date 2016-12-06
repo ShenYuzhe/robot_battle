@@ -110,6 +110,7 @@ var GameLayer = cc.Layer.extend({
 
     token: null,
 
+    robots: [],
     bullets: [],
 
     popWindow: null,
@@ -175,24 +176,13 @@ var GameLayer = cc.Layer.extend({
 
     updateCraft: function(ref, data) {
         var zoomScale = 9;
-        console.log(data);
         var leftRobotData = data.left_robot,
             rightRobotData = data.right_robot;
 
         this.zoomPoint(leftRobotData.position, zoomScale);
         this.zoomPoint(rightRobotData.position, zoomScale);
 
-        this.left_robot.setPosition(leftRobotData.position.x, leftRobotData.position.y);
-        this.left_robot.setRotation(leftRobotData.direction * (-180) / Math.PI);
-
-        this.right_robot.setPosition(rightRobotData.position.x, rightRobotData.position.y);
-        this.right_robot.setRotation(rightRobotData.direction * (-180) / Math.PI);
-
-        this.left_health.setString('left health: ' + leftRobotData.health);
-        this.right_health.setString('right health: ' + rightRobotData.health);
-
-        var leftDestoryCb = null, rightDestoryCb = null;
-
+        var leftDestoryCb, rightDestoryCb;
         if (leftRobotData.health == 0)
             leftDestoryCb = function() {
                 ref.explode(ref.left_robot);
@@ -203,10 +193,38 @@ var GameLayer = cc.Layer.extend({
                 ref.explode(ref.right_robot);
             }
 
+        var leftBullet, rightBullet;
+        if (leftRobotData.attack > 0)
+            this.bullets.push(this.Bullet(this, leftRobotData.position, rightRobotData.position, rightDestoryCb));
+        if (rightRobotData.attack > 0)
+            this.bullets.push(this.Bullet(this, rightRobotData.position, leftRobotData.position, leftDestoryCb));
+        this.robots.push(this.FlyObj(this.left_robot, this.left_robot.getPosition(), leftRobotData.position, 5,
+            leftRobotData.rotation, undefined, function() {
+                ref.left_health.setString('left health: ' + leftRobotData.health);
+            }));
+
+        this.robots.push(this.FlyObj(this.right_robot, this.right_robot.getPosition(), rightRobotData.position, 5,
+            rightRobotData.rotation, undefined, function() {
+                ref.right_health.setString('right health: ' + rightRobotData.health);
+            }));
+
+        /*this.left_robot.setPosition(leftRobotData.position.x, leftRobotData.position.y);
+        this.left_robot.setRotation(leftRobotData.direction * (-180) / Math.PI);
+
+        this.right_robot.setPosition(rightRobotData.position.x, rightRobotData.position.y);
+        this.right_robot.setRotation(rightRobotData.direction * (-180) / Math.PI);
+
+        this.left_health.setString('left health: ' + leftRobotData.health);
+        this.right_health.setString('right health: ' + rightRobotData.health);
+
+        var leftDestoryCb = null, rightDestoryCb = null;
+
+        
+
         if (leftRobotData.attack > 0)
             this.bullets.push(this.Bullet(leftRobotData.position, rightRobotData.position, rightDestoryCb));
         if (rightRobotData.attack > 0)
-            this.bullets.push(this.Bullet(rightRobotData.position, leftRobotData.position, leftDestoryCb));
+            this.bullets.push(this.Bullet(rightRobotData.position, leftRobotData.position, leftDestoryCb));*/
     },
 
     calDegree: function(fromPoint, toPoint) {
@@ -222,27 +240,87 @@ var GameLayer = cc.Layer.extend({
         );
     },
 
-    Bullet: function(fromPoint, toPoint, callback) {
-        var velocity = 20,
+    FlyObj: function(sprite, srcPt, tarPt, velocity, rotate, startCbk, endCbk) {
+        var distance = this.calDistance(srcPt, tarPt),
+            anglVelo = 10,
+            dx = distance == 0 ? 0 : velocity * (tarPt.x - srcPt.x) / distance,
+            dy = distance == 0 ? 0 : velocity * (tarPt.y - srcPt.y) / distance;
+        
+        /*if (undefined != rotate && rotate.degree < 0) {
+            console.log(rotate.degree);
+            rotate.degree = -rotate.degree
+            rotate.isClockwise = !rotate.isClockwise;
+        }*/
+
+        return {
+            'dx': dx,
+            'dy': dy,
+            'target': tarPt,
+
+            'anglVelo': anglVelo,
+            'rotate': rotate,
+            
+            'sprite': sprite,
+
+            'started': false, 
+            'startCbk': startCbk,
+            'endCbk': endCbk
+        }; 
+    },
+
+    Bullet: function(ref, fromPoint, toPoint, callback) {
+        var velocity = 10,
             degree = this.calDegree(fromPoint, toPoint);
 
         var bullet = this.initSprite(res.bullet, fromPoint, degree, 0.6);
-        this.addChild(bullet, 1);
-
-        distance = this.calDistance(fromPoint, toPoint);
-
-        cc.audioEngine.playEffect(cc.sys.os == cc.sys.OS_WP8 || cc.sys.os == cc.sys.OS_WINRT ? res.fireEffect_wav : res.fireEffect_mp3);
         
-        return {
-            'dx': velocity * (toPoint.x - fromPoint.x) / distance,
-            'dy': velocity * (toPoint.y - fromPoint.y) / distance,
-            'target': toPoint,
-            'sprite': bullet,
-            'callback': callback
-        };
+        
+        return this.FlyObj(bullet, fromPoint, toPoint, velocity, undefined, function() {
+                console.log('bullet created');
+                ref.addChild(bullet, 1);
+                cc.audioEngine.playEffect(cc.sys.os == cc.sys.OS_WP8 || cc.sys.os == cc.sys.OS_WINRT ? res.fireEffect_wav : res.fireEffect_mp3);
+            }, function() {
+                if (undefined != callback)
+                    callback();
+                ref.removeChild(bullet);
+            });
     },
 
-    updateBullet: function(bullet) {
+    updateFlyObj: function(flyObj) {
+        
+        var sprite = flyObj.sprite;
+        var target = flyObj.target, rotate = flyObj.rotate,
+            reached = false;
+
+        if (!flyObj.started && undefined != flyObj.startCbk) {
+            flyObj.startCbk();
+            flyObj.started = true;
+        }
+
+        if (undefined != rotate && rotate.degree != 0) {
+            console.log(rotate.degree);
+            var currRotate = sprite.getRotationX(),
+                clockCoef = rotate.isClockwise ? 1 : -1;
+            var dAngl = Math.abs(rotate.degree) <= Math.abs(flyObj.anglVelo) ? rotate.degree : flyObj.anglVelo;
+            rotate.degree -= (clockCoef * dAngl);
+            sprite.setRotation(currRotate + clockCoef * dAngl);
+        }
+
+        if (Math.abs(flyObj.target.x - flyObj.sprite.x) <= Math.abs(flyObj.dx)) {
+            sprite.setPosition(flyObj.target.x, flyObj.target.y);
+            reached = true;
+        } else
+            sprite.setPosition(sprite.x + flyObj.dx, sprite.y + flyObj.dy);
+
+        if (reached && (undefined == rotate || rotate.degree == 0)
+            && undefined != flyObj.endCbk)
+            flyObj.endCbk();
+        else
+            return flyObj;
+
+    },
+
+    /*updateBullet: function(bullet) {
         var sprite = bullet.sprite;
         sprite.setPosition(sprite.x + bullet.dx, sprite.y + bullet.dy);
         if (this.calDistance(sprite, bullet.target) <= 20 ) {
@@ -251,7 +329,7 @@ var GameLayer = cc.Layer.extend({
                 bullet.callback();
         } else
             return bullet;
-    },
+    },*/
 
     openChannel: function(ref) {
 
@@ -264,6 +342,7 @@ var GameLayer = cc.Layer.extend({
         };
         this.websocket.onmessage = function(evt) {
             var data = JSON.parse(evt.data);
+            console.log(data);
             if (undefined != data.winner) {
                 ref.websocket.close();
                 ref.webstate = false;
@@ -326,7 +405,7 @@ var GameLayer = cc.Layer.extend({
         this.addChild(this.left_robot, 1);
 
         this.right_robot = this.initSprite(res.blue_robot,
-            {'x': size.width * 2 / 3, 'y': size.height / 2}, 0, 0.6);
+            {'x': size.width * 2 / 3, 'y': size.height / 2}, 180, 0.6);
         this.addChild(this.right_robot, 1);
 
         this.left_health = this.initHealth('left robot',
@@ -363,21 +442,21 @@ var GameLayer = cc.Layer.extend({
             this.websocket.send(JSON.stringify({'action': 'token', 'token': this.token}));
     },
 
-    lastUpdateTime: null,
+    updateFlys: function(flys) {
+        var len = flys.length;
+        for (i = 0; i < len; i++) {
+            var fly = this.updateFlyObj(flys.shift());
+            if (undefined != fly)
+                flys.push(fly);
+        }
+        
+        return flys.length == 0;
+    },
 
     update: function(dt) {
-        var currTime = new Date().getTime();
-        var bulletN = this.bullets.length;
-        if (bulletN > 0) {
-            for (i = 0; i < bulletN; i++) {
-                var bullet = this.updateBullet(this.bullets.shift());
-                if (undefined != bullet)
-                    this.bullets.push(bullet);
-            }
-        } else if (null == this.lastUpdateTime || currTime - this.lastUpdateTime >= 500) {
-            this.watchFight(this);
-            this.lastUpdateTime = currTime;
-        }
+        if (this.updateFlys(this.robots))
+            if (this.updateFlys(this.bullets))
+                this.watchFight(this);
     }
 });
 
