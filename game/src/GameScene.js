@@ -290,7 +290,9 @@ var GameLayer = cc.Layer.extend({
         
         var sprite = flyObj.sprite;
         var target = flyObj.target, rotate = flyObj.rotate,
-            reached = false;
+            reached = false, anglVelo = flyObj.anglVelo;
+
+        
 
         if (!flyObj.started && undefined != flyObj.startCbk) {
             flyObj.startCbk();
@@ -298,11 +300,14 @@ var GameLayer = cc.Layer.extend({
         }
 
         if (undefined != rotate && rotate.degree != 0) {
-            console.log(rotate.degree);
+            if ((anglVelo > 0 && rotate.degree < 0) || (anglVelo < 0 && rotate.degree > 0))
+            anglVelo = -anglVelo;
+
+            console.log(rotate.degree, anglVelo);
             var currRotate = sprite.getRotationX(),
                 clockCoef = rotate.isClockwise ? 1 : -1;
-            var dAngl = Math.abs(rotate.degree) <= Math.abs(flyObj.anglVelo) ? rotate.degree : flyObj.anglVelo;
-            rotate.degree -= (clockCoef * dAngl);
+            var dAngl = Math.abs(rotate.degree) <= Math.abs(flyObj.anglVelo) ? rotate.degree : anglVelo;
+            rotate.degree -= dAngl;
             sprite.setRotation(currRotate + clockCoef * dAngl);
         }
 
