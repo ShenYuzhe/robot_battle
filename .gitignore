@@ -4,3 +4,4 @@
 models/*.swo
 models/*.swp
 models/*.swn
+server/node_modules/*

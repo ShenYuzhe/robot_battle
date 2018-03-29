@@ -27,6 +27,7 @@
 </head>
 
 <body>
+    <script src="./config.js"></script>
     <script>
 
         function submitScript(data) {
@@ -40,7 +41,7 @@
                 alert('Oups! Something goes wrong.');
             });
 
-            XHR.open('PUT', 'http://localhost:3000/driver/' + data.name);
+            XHR.open('PUT', config.protocol + '://' + config.server_host + '/driver/' + data.name);
 
             var formData = new FormData();
 

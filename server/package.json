@@ -1,6 +1,6 @@
 {
     "dependencies": {
-        "mongodb": "latest",
+        "mongodb": "2.2.35",
         "async": "latest",
         "promise": "latest",
         "q": "latest",

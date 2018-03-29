@@ -6,5 +6,6 @@
     "modules"		: ["editbox"],
     "jsList"        : ["src/GameScene.js",
                        "src/Resource.js",
-                       "src/CodeScene.js"]
+                       "src/CodeScene.js",
+                        "src/config.js"]
 }

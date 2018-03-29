@@ -15,6 +15,10 @@ function createRobot(req, res) {
 	var robot = req.body;
 	co (
 		function* () {
+            for (key in robot)
+                console.log(key);
+            console.log(robot);
+            console.log(typeof(robot));
 			db.createRobot(robot);		
 			res.status(200).send('robot created');
 		}

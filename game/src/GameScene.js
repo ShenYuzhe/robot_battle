@@ -135,7 +135,7 @@ var GameLayer = cc.Layer.extend({
     startFight: function(ref) {
         var leftDriver = this._drivernames.left_driver,
             rightDriver = this._drivernames.right_driver;
-        var url = 'http://localhost:3000/fight?model1=strong&driver1='
+        var url = config.protocol + '://' + config.server_host + '/fight?model1=strong&driver1='
                     + leftDriver
                     + '&model2=aggressive&driver2='
                     + rightDriver;
@@ -338,7 +338,7 @@ var GameLayer = cc.Layer.extend({
 
     openChannel: function(ref) {
 
-        var wsServer = 'ws://127.0.0.1:3000/watch';
+        var wsServer = 'ws://' + config.server_host + '/watch';
         this.websocket  = new WebSocket(wsServer);
         this.websocket.onopen = function() {
             ref.webstate = true;
