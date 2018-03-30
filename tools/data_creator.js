@@ -10,7 +10,6 @@ function getUrl(suffix) {
 
 function createDriver(name, driver) {
     var options = {
-        //method: 'PUT',
         url: getUrl('/driver/' + name),
         formData: {
             'driver': fs.createReadStream(driver)
@@ -21,7 +20,6 @@ function createDriver(name, driver) {
 
 function createModel(name, model) {
     var options = {
-        //method: 'PUT',
         url: getUrl('/robot/' + name),
         headers: {
             'content-type': 'application/json'
