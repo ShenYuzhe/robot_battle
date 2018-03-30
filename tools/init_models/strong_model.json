@@ -1,0 +1,16 @@
+{
+	"name": "strong",
+	"model": "strong",
+	"type": "robot",
+	"health": 500,
+	"attack": 80,
+	"arm": 1000,
+	"energy": 3,
+	"reach": 10,
+	"rotate": 180,
+	"strength": 50,
+	"sight": {
+		"distance": 1000,
+		"width":3.14
+	}
+}

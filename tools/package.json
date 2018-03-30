@@ -1,0 +1,7 @@
+{
+    "dependencies": {
+        "fs": "latest",
+        "request": "latest",
+        "request-promise": "latest"
+    }
+}
