@@ -24,8 +24,13 @@ var read = function(db) {
 MongoClient.connect(url, function(err, db) {
       assert.equal(null, err);
         console.log("Connected correctly to server.");
-    insert(db);
-    read(db);
-    db.close();
+    //insert(db);
+    //read(db);
+    var collection = db.collection('lala');
+    collection.createIndex({age: -1}, {unique: true},
+            function(err, res) {
+                console.log(res);
+                db.close();
+            });
 });
 

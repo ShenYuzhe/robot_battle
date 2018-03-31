@@ -34,18 +34,19 @@ function connectUser(usr, callback) {
 	MongoClient.connect(endpoint.getInstance(),
 		function(err, db) {
 			assert.equal(null, err);
-			callback(db.collection(usr));
-			db.close();
+			callback(db.collection(usr),
+                     () => {db.close();});
 		});
 }
 
 function insert(usr, data) {
 	var deferred = q.defer();
-	connectUser(usr, function(collection) {
+	connectUser(usr, function(collection, destroy) {
 		collection.insert(data, function(err, result) {
-			console.log(data);
-			assert.equal(null, err);
-			deferred.resolve(result);
+			if (err)
+                deferred.reject(err);
+            deferred.resolve(result);
+            destroy();
 		});
 	});
 	return deferred.promise;
@@ -54,10 +55,12 @@ exports.insert = insert;
 
 function read(usr, query, callback) {
 	var deferred = q.defer();
-	connectUser(usr, function(collection) {
+	connectUser(usr, function(collection, destroy) {
 		collection.find(query).toArray(function(err, docs) {
-			assert.equal(null, err);
-			deferred.resolve(docs);
+			if (err)
+                deferred.reject(err);
+            deferred.resolve(docs);
+            destroy();
 		});
 	});
 	return deferred.promise;
@@ -68,15 +71,32 @@ function update(usr, query, data,
 	isWhole, callback) {
 	var deferred = q.defer();
 	var body = isWhole ? data : {$set: data};
-	connectUser(usr, function(collection) {
+	connectUser(usr, function(collection, destroy) {
 		collection.updateOne(query, body, function(err, result) {
-			assert.equal(null, err);
-			deferred.resolve(result);
+			if (err)
+                deferred.reject(err);
+            deferred.resolve(result);
+            destroy();
 		});
 	});
 	return deferred.promise;
 }
 exports.update = update;
+
+var uniqueOption = {unique: true};
+function createIndex(usr, query, option) {
+    var deferred = q.defer();
+    connectUser(usr, function(collection, destroy) {
+        collection.createIndex(query, option, function(err, result) {
+            if (err)
+                deferred.reject(err);
+            deferred.resolve(result);
+            destroy();
+        });
+    });
+    return deferred.promise;
+}
+exports.createIndex = createIndex;
 
 function QueryBuilder() {
 
@@ -187,6 +207,21 @@ function insertProfile(usr, profile) {
 	return insert(usr, profile);
 }
 exports.insertProfile = insertProfile;
+
+function createUniqueIndex(usr) {
+    var query = new QueryBuilder()
+                        .withType(1)
+                        .withModel(1)
+                        .withName(1)
+                        .build();
+    return createIndex(usr, query, uniqueOption);
+}
+exports.createUniqueIndex = createUniqueIndex;
+
+exports.createUniqueShopIndex = function() {
+    return createUniqueIndex(merchant);
+}
+
 
 var sample_robot = require('./sample_robot.json');
 function insertRobot(usr, robot) {

@@ -5,7 +5,7 @@ var mongoAgent = require('./mongoAgent');
 var createRobot = mongoAgent.createRobot;
 var getRobotByModel = mongoAgent.getRobotByModel;
 
-co(
+/*co(
 	function* () {
 		var sample_robot = require('./sample_robot.json');
 		var result = yield createRobot(sample_robot);
@@ -18,4 +18,6 @@ co(
 		console.log(err);
 	}
 );
-console.log("create and grab robot case passes");
+console.log("create and grab robot case passes");*/
+
+mongoAgent.createUniqueRobotIndex().then(console.log);
