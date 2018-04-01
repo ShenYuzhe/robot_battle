@@ -2,6 +2,7 @@ var MongoClient = require('mongodb').MongoClient;
 var q = require('q');
 var assert = require('assert');
 var Promise = require('promise');
+var co = require('co');
 
 var url = 'mongodb://127.0.0.1:27017/yeah';
 var dbClient;
@@ -54,7 +55,15 @@ function withDb(callback) {
             deferred.reject(err);
         deferred.resolve(db);
     });
-    var db;
+    return co(
+        function* () {
+            var db = yield deferred.promise;
+            var res = yield createIndex(db);
+            db.close();
+            return res;
+        }
+    );
+    /*var db;
     return deferred.promise.then(
         function(res) {
             db = res;
@@ -67,7 +76,7 @@ function withDb(callback) {
             db.close();
             return result.promise;
         }
-    );
+    );*/
 }
 
 function test() {

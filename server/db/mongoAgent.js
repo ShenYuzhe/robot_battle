@@ -36,27 +36,23 @@ function withDB(usr, callback) {
             conn.reject(err);
         conn.resolve(db);    
     });
-    var db;
-    return conn.promise.then((res) => {
-        db = res;
-        return callback(db.collection(usr));
-    }).then((res) => {
-        var cbkRes = q.defer();
-        cbkRes.resolve(res);
+    return co(function* () {
+        var db = yield conn.promise;
+        var res = yield callback(db.collection(usr));
         db.close();
-        return cbkRes.promise;
-    }).catch((err) => { throw err;});
+        return res;
+    });
 }
 
 function insert(usr, data) {
     var deferred = q.defer();
-    withDB(usr, (collection) => {
+    return withDB(usr, (collection) => {
         collection.insert(data, (err, res) => {
             if (err)
                 deferred.reject(err);
             deferred.resolve(res);
         });
-        return deferred;
+        return deferred.promise;
     });
 }
 exports.insert = insert;
@@ -69,7 +65,7 @@ function read(usr, query, callback) {
                 deferred.reject(err);
             deferred.resolve(docs);
         });
-        return deferred;
+        return deferred.promise;
     });
 }
 exports.read = read;
@@ -84,7 +80,7 @@ function update(usr, query, data,
                 deferred.reject(err);
             deferred.resolve(result);
         });
-        return deferred;
+        return deferred.promise;
     });
 }
 exports.update = update;
@@ -98,7 +94,7 @@ function createIndex(usr, query, option) {
                 deferred.reject(err);
             deferred.resolve(res); 
         });
-        return deferred;
+        return deferred.promise;
     });
 }
 exports.createIndex = createIndex;
