@@ -29,41 +29,48 @@ var endpoint = (function() {
 	basic encapsulation of
 	low level utils 
 */
-function connectUser(usr, callback) {
-
-	MongoClient.connect(endpoint.getInstance(),
-		function(err, db) {
-			assert.equal(null, err);
-			callback(db.collection(usr),
-                     () => {db.close();});
-		});
+function withDB(usr, callback) {
+    var conn = q.defer();
+    MongoClient.connect(endpoint.getInstance(), function(err, db) {
+        if (err)
+            conn.reject(err);
+        conn.resolve(db);    
+    });
+    var db;
+    return conn.promise.then((res) => {
+        db = res;
+        return callback(db.collection(usr));
+    }).then((res) => {
+        var cbkRes = q.defer();
+        cbkRes.resolve(res);
+        db.close();
+        return cbkRes.promise;
+    }).catch((err) => { throw err;});
 }
 
 function insert(usr, data) {
-	var deferred = q.defer();
-	connectUser(usr, function(collection, destroy) {
-		collection.insert(data, function(err, result) {
-			if (err)
+    var deferred = q.defer();
+    withDB(usr, (collection) => {
+        collection.insert(data, (err, res) => {
+            if (err)
                 deferred.reject(err);
-            deferred.resolve(result);
-            destroy();
-		});
-	});
-	return deferred.promise;
+            deferred.resolve(res);
+        });
+        return deferred;
+    });
 }
 exports.insert = insert;
 
 function read(usr, query, callback) {
 	var deferred = q.defer();
-	connectUser(usr, function(collection, destroy) {
-		collection.find(query).toArray(function(err, docs) {
-			if (err)
+    return withDB(usr, (collection) => {
+        collection.find(query).toArray((err, docs) => {
+            if (err)
                 deferred.reject(err);
             deferred.resolve(docs);
-            destroy();
-		});
-	});
-	return deferred.promise;
+        });
+        return deferred;
+    });
 }
 exports.read = read;
 
@@ -71,30 +78,28 @@ function update(usr, query, data,
 	isWhole, callback) {
 	var deferred = q.defer();
 	var body = isWhole ? data : {$set: data};
-	connectUser(usr, function(collection, destroy) {
-		collection.updateOne(query, body, function(err, result) {
-			if (err)
+    return withDB(usr, (collection) => {
+        collection.updateOne(query, body, (err, res) => {
+            if (err)
                 deferred.reject(err);
             deferred.resolve(result);
-            destroy();
-		});
-	});
-	return deferred.promise;
+        });
+        return deferred;
+    });
 }
 exports.update = update;
 
 var uniqueOption = {unique: true};
 function createIndex(usr, query, option) {
     var deferred = q.defer();
-    connectUser(usr, function(collection, destroy) {
-        collection.createIndex(query, option, function(err, result) {
+    return withDB(usr, (collection) => {
+        collection.createIndex(query, option, (err, res) => {
             if (err)
                 deferred.reject(err);
-            deferred.resolve(result);
-            destroy();
+            deferred.resolve(res); 
         });
+        return deferred;
     });
-    return deferred.promise;
 }
 exports.createIndex = createIndex;
 
